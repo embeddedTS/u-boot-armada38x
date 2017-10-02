@@ -128,6 +128,13 @@ MV_HWS_TOPOLOGY_MAP TopologyMap[] =
     /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                     speed_bin             memory_device_width  mem_size     frequency  casL casWL      temperature */
 	{{{{0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}}, SPEED_BIN_DDR_CLEARFOG_BOARD, BUS_WIDTH_CLEARFOG_BOARD , MEM_4G, DDR_FREQ_800, 0 ,   0 , MV_HWS_TEMP_LOW}},
     INTERFACE_BUS_MASK_32BIT  /* Buses mask */
+    },
+    /* 4th Customer board  -  Technologic Systems TS-7800v2 */
+    {
+    0x1, /* active interfaces */
+    /*cs_mask, mirror, dqs_swap, ck_swap X PUPs                                     speed_bin             memory_device_width  mem_size     frequency  casL casWL      temperature */
+	{{{{0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}, {0x1,0,0,0}}, SPEED_BIN_DDR_1600K, BUS_WIDTH_16 , MEM_4G, DDR_FREQ_800, 0 ,   0 , MV_HWS_TEMP_LOW}},
+    INTERFACE_BUS_MASK_32BIT  /* Buses mask */
     }
 };
 

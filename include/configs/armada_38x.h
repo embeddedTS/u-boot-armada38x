@@ -68,7 +68,7 @@
 #define MV_DDR_64BIT
 #define MV_BOOTROM
 
-#if defined (CONFIG_CUSTOMER_BOARD_0) || defined (CONFIG_CUSTOMER_BOARD_1) || defined (CONFIG_CLEARFOG_BOARD)
+#if defined (CONFIG_CUSTOMER_BOARD_0) || defined (CONFIG_CUSTOMER_BOARD_1) || defined (CONFIG_CLEARFOG_BOARD) || defined (CONFIG_TS7800V2_BOARD)
 #define CONFIG_CUSTOMER_BOARD_SUPPORT
 #endif
 
@@ -580,6 +580,14 @@ extern int nand_get_env_offs(void);
 //	#define FAT_ENV_DEVICE			0
 //	#define FAT_ENV_PART			1
 //	#define FAT_ENV_FILE			"u-boot.env"
+
+
+//	#define CONFIG_ENV_IS_IN_EXTFS	/* Environment is in file on EXT partition */
+//	#define CONFIG_EXT4_WRITE
+//	#define EXTFS_ENV_INTERFACE		"mmc"
+//	#define EXTFS_ENV_DEVICE			0
+//	#define EXTFS_ENV_PART			1
+//	#define EXTFS_ENV_FILE			"/boot/u-boot.env"
 
 //	#define CONFIG_SYS_MMC_ENV_PART			1 /* Valid for MMC/eMMC for separating boot image and env */
 	#define CONFIG_SYS_MMC_ENV_DEV			0

@@ -101,6 +101,16 @@ SERDES_MAP CustomerBoardTopologyConfig[][MAX_SERDES_LANES] =
 	{ USB3_HOST1,	__5Gbps,	SERDES_DEFAULT_MODE,		MV_FALSE,	MV_FALSE },
 	{ PEX2,	  	__5Gbps,	PEX_ROOT_COMPLEX_x1,		MV_FALSE,	MV_FALSE },
 	{ SGMII2,	__1_25Gbps,	SERDES_DEFAULT_MODE,		MV_FALSE,	MV_FALSE }
+},
+{	/* Technologic Systems TS-7800v2 Topology */
+	/*  serdes lanes 0:SATA, 1:USB3, 2:SATA, 3:USB3, 4:none, 5:PCIe2 */
+
+	{ SATA0,	__3Gbps,	SERDES_DEFAULT_MODE,		MV_FALSE,	MV_FALSE },
+	{ USB3_HOST0,	__5Gbps,	SERDES_DEFAULT_MODE,		MV_FALSE,	MV_FALSE },
+	{ SATA1,  	__3Gbps,	SERDES_DEFAULT_MODE,		MV_FALSE,	MV_FALSE },
+	{ USB3_HOST1,	__5Gbps,	SERDES_DEFAULT_MODE,		MV_FALSE,	MV_FALSE },
+	{ DEFAULT_SERDES, 		LAST_SERDES_SPEED,		SERDES_DEFAULT_MODE,		MV_FALSE,	MV_FALSE },
+	{ PEX2,		__5Gbps,	PEX_ROOT_COMPLEX_x1,		MV_FALSE,	MV_FALSE }
 }};
 
 
@@ -134,6 +144,7 @@ loadTopologyFuncPtr loadTopologyFuncArr[] =
 	loadTopologyCustomer,   	  /* Customer Board 0 */
 	loadTopologyCustomer,   	  /* Customer Board 1*/
 	loadTopologyCustomer,   	  /* SolidRun ClearFog Board */
+	loadTopologyCustomer,   	  /* Technologic Systems TS-7800v2 */
 };
 
 #else /* CONFIG_CUSTOMER_BOARD_SUPPORT */

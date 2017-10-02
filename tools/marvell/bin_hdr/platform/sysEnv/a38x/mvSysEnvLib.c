@@ -331,6 +331,8 @@ MV_U32 mvBoardIdGet(MV_VOID)
 		gBoardId = CUSTOMER_BOARD_ID1;
 	#elif CONFIG_CLEARFOG_BOARD
 		gBoardId = A38X_CLEARFOG_BOARD_ID;
+	#elif CONFIG_TS7800V2_BOARD
+		gBoardId = A38X_TS7800V2_BOARD_ID;
 	#endif
 #else
 	/* For Marvell Boards: read board ID from TWSI*/

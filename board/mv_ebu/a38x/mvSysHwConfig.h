@@ -109,6 +109,10 @@ disclaimer.
 #define PEX3_IO_BASE			0xF1400000
 #define PEX3_IO_SIZE			_1M
 
+
+#define TS7800_V2_SYSCON_BASE   (PEX2_MEM_BASE + 0x100000)
+#define TS7800_V2_SYSCON_SIZE   0x48
+
 /* Device: CS0 - NOR or NAND, CS1 - SPI, CS2 - Boot ROM, CS3 - Boot device */
 /* NOR and NAND are configure to CS0 but it is posible to load
    NOR as BOOT_CS and NAND ad CS0 otherwise only NOR or NAND it posible */

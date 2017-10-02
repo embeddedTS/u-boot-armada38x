@@ -66,6 +66,7 @@
 #define CUTOMER_BOARD_ID_BASE                   A38X_CUTOMER_BOARD_ID_BASE
 #define CUSTOMER_BOARD_ID0			A38X_CUSTOMER_BOARD_ID0
 #define CUSTOMER_BOARD_ID1			A38X_CUSTOMER_BOARD_ID1
+#define TS7800V2_BOARD_ID			A38X_TS7800V2_BOARD_ID
 #define MV_MAX_CUSTOMER_BOARD_ID                A38X_MV_MAX_CUSTOMER_BOARD_ID
 #define MV_CUSTOMER_BOARD_NUM                   A38X_MV_CUSTOMER_BOARD_NUM
 
@@ -140,6 +141,28 @@
 #define A38x_CLEARFOG_BOARD_GPP_OUT_VAL_MID	0x0
 #define A38x_CLEARFOG_BOARD_GPP_POL_LOW		0x0
 #define A38x_CLEARFOG_BOARD_GPP_POL_MID		0x0
+
+
+/******************************* TS Board *************************************/
+/*******************************************************************************
+ * Technologic Systems TS-7800v2 */
+/******************************************************************************/
+#define A38x_TS7800V2_BOARD_MPP0_7			0x11111111
+#define A38x_TS7800V2_BOARD_MPP8_15			0x11111111
+#define A38x_TS7800V2_BOARD_MPP16_23		0x11000011
+#define A38x_TS7800V2_BOARD_MPP24_31		0x00001011
+#define A38x_TS7800V2_BOARD_MPP32_39		0x00000000
+#define A38x_TS7800V2_BOARD_MPP40_47		0x00010000
+#define A38x_TS7800V2_BOARD_MPP48_55		0x55000500
+#define A38x_TS7800V2_BOARD_MPP56_63		0x00005550
+
+#define A38x_TS7800V2_BOARD_GPP_OUT_ENA_LOW	0xFFFFFFFF
+#define A38x_TS7800V2_BOARD_GPP_OUT_ENA_MID	0xFFFFFFFF
+
+#define A38x_TS7800V2_BOARD_GPP_OUT_VAL_LOW	0x0
+#define A38x_TS7800V2_BOARD_GPP_OUT_VAL_MID	0x0
+#define A38x_TS7800V2_BOARD_GPP_POL_LOW		0x0
+#define A38x_TS7800V2_BOARD_GPP_POL_MID		0x0
 
 
 /******************************* Marvell Boards *******************************/

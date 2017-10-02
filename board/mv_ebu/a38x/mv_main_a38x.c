@@ -129,6 +129,8 @@ void mv_cpu_init(void);
 void mv_set_power_scheme(void);
 #endif
 
+static inline unsigned int syscon_read(int offset);
+
 extern nand_info_t nand_info[];       /* info for NAND chips */
 extern struct spi_flash *flash;
 extern const char version_string[];
@@ -158,6 +160,9 @@ void mv_print_map(void)
 	}
 #endif
 	printf("       Heap:\t\t\t0x%08x:0x%08x\n", (unsigned int)(gd->relocaddr - TOTAL_MALLOC_LEN), (unsigned int)gd->relocaddr);
+#ifdef CONFIG_ENV_IS_IN_EXTFS
+   printf("       U-Boot Environment:\t%s %d:%d %s\n\n", EXTFS_ENV_INTERFACE, EXTFS_ENV_DEVICE, EXTFS_ENV_PART, EXTFS_ENV_FILE);
+#else
 	printf("       U-Boot Environment:\t0x%08x:0x%08x ", CONFIG_ENV_OFFSET, CONFIG_ENV_OFFSET + CONFIG_ENV_SIZE);
 #ifdef MV_NAND_BOOT
 	printf("(NAND)\n\n");
@@ -165,6 +170,7 @@ void mv_print_map(void)
 	printf("(SPI)\n\n");
 #elif defined(MV_MMC_BOOT)
 	printf("(MMC)\n\n");
+#endif
 #endif
 }
 
@@ -322,11 +328,32 @@ void misc_init_r_env(void)
 	char *env;
 	char tmp_buf[10];
 	unsigned int malloc_len;
-
+   unsigned int syscon_reg, jumper_sd_boot, jumper_uboot;
+   
 	env = getenv("limit_dram_size");
 	if (!env)
 		setenv("limit_dram_size", "yes");
+			
+	syscon_reg = syscon_read(0);
+	
+	printf("fpga_rev=0x%02X\n"
+	       "board_id=0x%04X\n", syscon_reg & 0xFF, (syscon_reg >> 8) & 0xFFFF);
+	
+	snprintf(tmp_buf, sizeof(tmp_buf), 
+	   "0x%02X", syscon_reg & 0xFF);       
+	setenv("fpga_rev", tmp_buf);       
+	snprintf(tmp_buf, sizeof(tmp_buf), 
+	   "0x%04X", (syscon_reg >> 8) & 0xFFFF);       
+	setenv("board_id", tmp_buf);
+	
+	syscon_reg = syscon_read(4);
 
+	strcpy(tmp_buf, (syscon_reg & (1 << 30))?"on":"off");
+	setenv("jp_sdboot", tmp_buf);
+	
+	strcpy(tmp_buf, (syscon_reg & (1 << 31))?"on":"off");
+	setenv("jp_uboot", tmp_buf);
+	
 	env = getenv("console");
 	if (!env)
 		setenv("console", "console=ttyS0,115200");
@@ -514,6 +541,7 @@ void misc_init_r_env(void)
 			   "ip=$ipaddr:$serverip$bootargs_end $mvNetConfig video=dovefb:lcd0:$lcd0_params "
 			   "clcd.lcd0_enable=$lcd0_enable clcd.lcd_panel=$lcd_panel");
 #endif
+
 	env = getenv("bootcmd_auto");
 	if (!env)
 		setenv("bootcmd_auto", "stage_boot $boot_order");
@@ -710,6 +738,23 @@ void misc_init_r_env(void)
 		setenv("standalone", "fsload 0x2000000 $image_name;setenv bootargs $console $nandEcc $mtdparts_lgcy "
 			   "root=/dev/mtdblock0 rw ip=$ipaddr:$serverip$bootargs_end; bootm 0x2000000;");
 
+#if defined(CONFIG_ARMADA_38X)
+   env = getenv("bootcmd_usb");
+   if (!env) {
+      setenv("bootcmd_usb", 
+         "mw 0xf1018014 0 1; mw 0xf101816c 0x2000 1; mw 0xf1018170 0x2000 1;"
+         "env set usbType 3;env set usbActive 1; usb start; "
+         "if usb dev 0; then echo Loading from USB...;"
+         "env set loadaddr 0x2000000;env set fdtaddr 0x1000000;"
+         "env set image_name /boot/zImage;env set fdtfile /boot/armada-38x.dtb;"
+         "ext4load usb 0:2 $loadaddr $image_name;ext4load usb 0:2 $fdtaddr $fdtfile;"
+         "env set bootargs root=/dev/sda2 ro rootwait init=/linuxrc $console;"
+         "bootz  $loadaddr - $fdtaddr;"
+         "else echo USB not found; fi");
+   }
+   
+#endif			   
+			   
 	/* Set boodelay to 3 sec, if Monitor extension are disabled */
 	if (!enaMonExt())
 		setenv("disaMvPnp", "no");
@@ -1070,6 +1115,7 @@ int board_early_init_f (void)
 }
 int misc_init_r(void)
 {
+     
 	mvBoardDebugLed(5);
 
 	/* init special env variables */
@@ -1108,8 +1154,6 @@ int misc_init_r(void)
 	else
 
 	setenv("pcieTune", "no");
-
-
 
 #if defined(MV_INCLUDE_UNM_ETH) || defined(MV_INCLUDE_GIG_ETH)
 	mvBoardEgigaPhyInit();
@@ -1160,6 +1204,12 @@ MV_U32 mvSysClkGet(void)
 void reset_cpu(ulong addr)
 {
 	mvBoardReset();
+}
+
+
+static inline unsigned int syscon_read(int offset)
+{
+   return *(volatile unsigned int *)(TS7800_V2_SYSCON_BASE + offset);
 }
 
 void mv_cpu_init(void)
