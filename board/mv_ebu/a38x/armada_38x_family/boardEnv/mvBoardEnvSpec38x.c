@@ -671,6 +671,128 @@ MV_BOARD_INFO armada_38x_ts7800v2_board_info = {
 	.switchInfoNum				= 0
 };
 
+/*******************************************************************************
+ * A38x Technologic Systems TS-7840
+ *******************************************************************************/
+MV_BOARD_TWSI_INFO armada_38x_ts7840_BoardTwsiDev[] = {
+	/* {{MV_BOARD_DEV_CLASS devClass, MV_U8 devClassId,  MV_U8 twsiDevAddr, MV_U8 twsiDevAddrType}} */
+	{ BOARD_TWSI_IO_EXPANDER,	0,	0x20, ADDR7_BIT, MV_FALSE},
+};
+MV_BOARD_MAC_INFO armada_38x_ts7840_BoardMacInfo[] = {
+	/* {{MV_BOARD_MAC_SPEED boardMacSpeed, MV_32 boardEthSmiAddr ,
+	   MV_32 boardEthSmiAddr0 , MV_BOOL boardMacEnabled;}} */
+	{ BOARD_MAC_SPEED_AUTO, 0, 0, MV_TRUE},
+	{ BOARD_MAC_SPEED_AUTO, 1, 1, MV_TRUE},
+	{ BOARD_MAC_SPEED_AUTO, 2, 2, MV_FALSE}
+};
+
+MV_DEV_CS_INFO armada_38x_ts7840_BoardDeCsInfo[] = {
+	/*{deviceCS, params, devType, devWidth, busWidth, busNum, active }*/
+	{ DEVICE_CS0,	N_A, BOARD_DEV_NAND_FLASH,	8,	8,	0,	MV_FALSE },	/* NAND DEV */
+	{ DEVICE_CS1,	N_A, BOARD_DEV_NAND_FLASH,	8,	8,	0,	MV_FALSE },	/* NAND DEV */
+	{ DEVICE_CS2,	N_A, BOARD_DEV_NAND_FLASH,	8,	8,	0,	MV_FALSE },	/* NAND DEV */
+	{ DEVICE_CS3,	N_A, BOARD_DEV_NAND_FLASH,	8,	8,	0,	MV_FALSE },	/* NAND DEV */
+	{ DEV_BOOCS,	N_A, BOARD_DEV_NOR_FLASH,	16,	16,	0,	MV_FALSE },	/* NOR DEV */
+	{ SPI0_CS0,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	0,	MV_FALSE },	/* SPI0 DEV */
+	{ SPI0_CS1,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	0,	MV_FALSE },	/* SPI0 DEV */
+	{ SPI0_CS2,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	0,	MV_FALSE },	/* SPI0 DEV */
+	{ SPI0_CS3,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	0,	MV_FALSE },	/* SPI0 DEV */
+	{ SPI1_CS0,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	1,	MV_TRUE },	/* SPI1 DEV */
+	{ SPI1_CS1,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	1,	MV_FALSE },	/* SPI1 DEV */
+	{ SPI1_CS2,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	1,	MV_FALSE },	/* SPI1 DEV */
+	{ SPI1_CS3,		N_A, BOARD_DEV_SPI_FLASH,	8,	8,	1,	MV_FALSE }	/* SPI1 DEV */
+};
+
+MV_BOARD_MPP_INFO armada_38x_ts7840_BoardMppConfigValue[] = {
+	{ {
+		A38x_TS7840_BOARD_MPP0_7,
+		A38x_TS7840_BOARD_MPP8_15,
+		A38x_TS7840_BOARD_MPP16_23,
+		A38x_TS7840_BOARD_MPP24_31,
+		A38x_TS7840_BOARD_MPP32_39,
+		A38x_TS7840_BOARD_MPP40_47,
+		A38x_TS7840_BOARD_MPP48_55,
+		A38x_TS7840_BOARD_MPP56_63,
+	} }
+};
+
+MV_BOARD_USB_INFO armada_38x_ts7840_InfoBoardUsbInfo[] = {
+/* {MV_UNIT_ID usbType, MV_U8 usbPortNum, MV_BOOLEAN isActive} */
+	{ USB3_UNIT_ID, 0, MV_TRUE},
+	{ USB3_UNIT_ID, 1, MV_TRUE},
+	{ USB_UNIT_ID, 0, MV_TRUE},
+};
+
+void A38x_TS7840_BOARD_gpp_callback(MV_BOARD_INFO *board) {
+
+}
+
+MV_BOARD_INFO armada_38x_ts7840_board_info = {
+	.boardName				= "Technologic Systems TS-7840",
+	.numBoardNetComplexValue		= 0,
+	.pBoardNetComplexInfo			= NULL,
+	.pBoardMppConfigValue			= armada_38x_ts7840_BoardMppConfigValue,
+	.intsGppMaskLow				= 0,
+	.intsGppMaskMid				= 0,
+	.intsGppMaskHigh			= 0,
+	.numBoardDeviceIf			= ARRSZ(armada_38x_ts7840_BoardDeCsInfo),
+	.pDevCsInfo					= armada_38x_ts7840_BoardDeCsInfo,
+	.numBoardTwsiDev			= ARRSZ(armada_38x_ts7840_BoardTwsiDev),
+	.pBoardTwsiDev				= armada_38x_ts7840_BoardTwsiDev,
+	.numBoardMacInfo			= ARRSZ(armada_38x_ts7840_BoardMacInfo),
+	.pBoardMacInfo				= armada_38x_ts7840_BoardMacInfo,
+	.numBoardGppInfo			= 0,
+	.pBoardGppInfo				= 0,
+	.numBoardIoExpPinInfo			= 0,
+	.pBoardIoExpPinInfo			= 0,
+	.activeLedsNumber			= 0,
+	.pLedGppPin				= NULL,
+	.ledsPolarity				= 0,
+
+	/* PMU Power */
+	.pmuPwrUpPolarity			= 0,
+	.pmuPwrUpDelay				= 80000,
+
+	/* GPP values */
+	.gppOutEnValLow				= A38x_TS7840_BOARD_GPP_OUT_ENA_LOW,
+	.gppOutEnValMid				= A38x_TS7840_BOARD_GPP_OUT_ENA_MID,
+	.gppOutValLow				= A38x_TS7840_BOARD_GPP_OUT_VAL_LOW,
+	.gppOutValMid				= A38x_TS7840_BOARD_GPP_OUT_VAL_MID,
+	.gppPolarityValLow			= A38x_TS7840_BOARD_GPP_POL_LOW,
+	.gppPolarityValMid			= A38x_TS7840_BOARD_GPP_POL_MID,
+	.gppPostConfigCallBack			= A38x_TS7840_BOARD_gpp_callback,
+
+	/* TDM */
+	.numBoardTdmInfo			= {},
+	.pBoardTdmInt2CsInfo			= {},
+	.boardTdmInfoIndex			= -1,
+
+	.pBoardSpecInit				= NULL,
+
+	.pBoardUsbInfo				= armada_38x_ts7840_InfoBoardUsbInfo,
+	.numBoardUsbInfo			= ARRSZ(armada_38x_ts7840_InfoBoardUsbInfo),
+
+	/* NAND init params */
+	.nandFlashReadParams			= 0,
+	.nandFlashWriteParams			= 0,
+	.nandFlashControl			= 0,
+	.nandIfMode					= NAND_IF_NFC,
+
+	.isSdMmcConnected			= MV_TRUE,
+
+	/* NOR init params */
+	.norFlashReadParams			= 0,
+	.norFlashWriteParams			= 0,
+	/* Enable modules auto-detection. */
+	.configAutoDetect			= MV_FALSE,
+	.numIoExp				= 0,
+	.pIoExp					= 0,
+	.boardOptionsModule			= MV_MODULE_NO_MODULE,
+	.isAmc					= MV_FALSE,
+	.pSwitchInfo				= NULL,
+	.switchInfoNum				= 0
+};
+
 /*
  * All supported A380 customer boards
  */
@@ -678,9 +800,9 @@ MV_BOARD_INFO *customerBoardInfoTbl[] = {
 	&armada_38x_customer_board_0_info,
 	&armada_38x_customer_board_1_info,
 	&armada_38x_clearfog_board_info,
-	&armada_38x_ts7800v2_board_info
+	&armada_38x_ts7800v2_board_info,
+	&armada_38x_ts7840_board_info
 };
-
 
 /***************************************** Marvell Boards *****************************************/
 /*******************************************************************************

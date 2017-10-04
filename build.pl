@@ -96,6 +96,7 @@ if(($opt_b eq "armada_xp_dbgp") or
 	($opt_b eq "armada_375_customer1") or
 	($opt_b eq "armada_38x") or
 	($opt_b eq "armada_38x_ts7800v2") or
+	($opt_b eq "armada_38x_ts7840") or
 	($opt_b eq "armada_38x_clearfog") or
 	($opt_b eq "armada_38x_customer0") or
 	($opt_b eq "armada_38x_customer1") or
@@ -154,7 +155,7 @@ if(($opt_b eq "armada_xp_dbgp") or
 		$targetBoard = substr $board, 8;
 	}
 	# if board string contains "customer" (Or A38x-SolidRun Clear fog board), use customer define for binary_header
-	if ((index($board, "customer") != -1) or (index($board, "clearfog") != -1) or (index($board, "ts7800v2") != -1)) {
+	if ((index($board, "customer") != -1) or (index($board, "clearfog") != -1) or (index($board, "ts7800v2") != -1) or (index($board, "ts7840") != -1)) {
 		system("echo \"#define CONFIG_CUSTOMER_BOARD_SUPPORT 1\" >> include/config.h");
 	}
 

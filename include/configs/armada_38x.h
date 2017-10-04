@@ -68,7 +68,7 @@
 #define MV_DDR_64BIT
 #define MV_BOOTROM
 
-#if defined (CONFIG_CUSTOMER_BOARD_0) || defined (CONFIG_CUSTOMER_BOARD_1) || defined (CONFIG_CLEARFOG_BOARD) || defined (CONFIG_TS7800V2_BOARD)
+#if defined (CONFIG_CUSTOMER_BOARD_0) || defined (CONFIG_CUSTOMER_BOARD_1) || defined (CONFIG_CLEARFOG_BOARD) || defined (CONFIG_TS7800V2_BOARD) || defined (CONFIG_TS7840_BOARD)
 #define CONFIG_CUSTOMER_BOARD_SUPPORT
 #endif
 
@@ -283,6 +283,14 @@ extern unsigned int mvUartPortGet(void);
  * U-Boot
  */
 #define CONFIG_SYS_MAXARGS      32      /* max number of command argg */
+
+/*#define CONFIG_CMD_SF
+#define CONFIG_SPI_FLASH
+#define CONFIG_SPI_FLASH_STMICRO
+#define CONFIG_SF_DEFAULT_BUS 0
+#define CONFIG_SF_DEFAULT_CS 0
+#define CONFIG_SF_DEFAULT_SPEED 15000000
+#define CONFIG_SF_DEFAULT_MODE (SPI_MODE_0)*/
 
 /* SPI Flash configuration   */
 /*****************************/
