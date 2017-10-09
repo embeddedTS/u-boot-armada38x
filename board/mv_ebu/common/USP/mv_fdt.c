@@ -263,11 +263,11 @@ void ft_board_setup(void *blob, bd_t *bd)
 	env = getenv("fdt_skip_update");
 	if (env && ((strncmp(env, "yes", 3) == 0))) {
 		skip = 1;
-		printf("\n   Skipping Device Tree update ('fdt_skip_update' = yes)\n");
+		mv_fdt_dprintf("\n   Skipping Device Tree update ('fdt_skip_update' = yes)\n");
 	}
 	else {
 		skip = 0;
-		printf("\n   Starting Device Tree update ('fdt_skip_update' = no)\n");
+		mv_fdt_dprintf("\n   Starting Device Tree update ('fdt_skip_update' = no)\n");
 	}
 
 	/* Update dt information for all SoCs */
@@ -309,12 +309,12 @@ void ft_board_setup(void *blob, bd_t *bd)
 			if (err < 0)
 				goto bs_fail;
 		}
-		printf("Updating device tree successful\n");
+		mv_fdt_dprintf("Updating device tree successful\n");
 	}
 
 	return;
 bs_fail:
-	printf("Updating device tree failed\n");
+	mv_fdt_dprintf("Updating device tree failed\n");
 	return;
 }
 
