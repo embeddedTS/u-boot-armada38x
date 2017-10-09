@@ -83,3 +83,8 @@ cscope.*
 
 # spl ais files
 /spl/*.ais
+
+# mv specific files
+/examples/api/marvell/mon_ext/monext
+/tools/marvell/bin_hdr/src_ddr/lib/ddr3_training_a38x.lib
+
