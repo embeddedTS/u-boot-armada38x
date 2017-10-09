@@ -444,6 +444,7 @@ extern int nand_get_env_offs(void);
 #define CONFIG_SYS_DRAM_BANKS           2
 #define CONFIG_NR_DRAM_BANKS            2
 
+#define CONFIG_SYS_ALT_MEMTEST
 #define CONFIG_SYS_MEMTEST_START        0x00400000
 #define CONFIG_SYS_MEMTEST_END          0x007fffff
 
