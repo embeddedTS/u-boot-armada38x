@@ -30,7 +30,7 @@
  * MV_DEBUG_INIT need to be defines, otherwise the output of the
  * DDR2 training code is not complete and misleading
  */
-#define MV_DEBUG_INIT
+/*#define MV_DEBUG_INIT*/
 
 #ifdef MV_DEBUG_INIT
 #define DEBUG_INIT_S(s)			puts(s)
