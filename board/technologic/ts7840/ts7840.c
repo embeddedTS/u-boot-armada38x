@@ -111,8 +111,6 @@ int board_init(void)
 
 int checkboard(void)
 {
-	puts("Board: Technologic TS-7840\n");
-
 	return 0;
 }
 
