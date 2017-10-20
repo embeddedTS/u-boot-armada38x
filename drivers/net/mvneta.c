@@ -1558,10 +1558,6 @@ static int mvneta_start(struct udevice *dev)
 			pp->phydev = phydev;
 			phy_config(phydev);
 			phy_startup(phydev);
-			if (!phydev->link) {
-				printf("%s: No link.\n", phydev->dev->name);
-				return -1;
-			}
 
 			/* Full init on first call */
 			mvneta_init(dev);
