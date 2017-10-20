@@ -57,7 +57,11 @@ u32 spl_boot_device(void)
 #ifdef CONFIG_SPL_MMC_SUPPORT
 u32 spl_boot_mode(const u32 boot_device)
 {
+#ifdef CONFIG_SUPPORT_EMMC_BOOT
+	return MMCSD_MODE_EMMCBOOT;
+#else
 	return MMCSD_MODE_RAW;
+#endif
 }
 #endif
 
