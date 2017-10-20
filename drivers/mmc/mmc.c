@@ -1482,7 +1482,7 @@ static int mmc_startup(struct mmc *mmc)
 		};
 
 		for (idx=0; idx < ARRAY_SIZE(ext_csd_bits); idx++) {
-			unsigned int extw = ext_csd_bits[idx];
+			unsigned int extw = 0;
 			unsigned int caps = ext_to_hostcaps[extw];
 
 			/*
