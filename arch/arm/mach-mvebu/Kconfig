@@ -75,6 +75,10 @@ config TARGET_CLEARFOG
 	bool "Support ClearFog"
 	select 88F6820
 
+config TARGET_TS7840
+	bool "Support TS-7840"
+	select 88F6820
+
 config TARGET_MVEBU_ARMADA_37XX
 	bool "Support Armada 37xx platforms"
 	select ARMADA_3700
@@ -138,6 +142,7 @@ config SYS_BOARD
 	default "ds414" if TARGET_DS414
 	default "maxbcm" if TARGET_MAXBCM
 	default "theadorable" if TARGET_THEADORABLE
+	default "ts7840" if TARGET_TS7840
 
 config SYS_CONFIG_NAME
 	default "clearfog" if TARGET_CLEARFOG
@@ -150,6 +155,7 @@ config SYS_CONFIG_NAME
 	default "ds414" if TARGET_DS414
 	default "maxbcm" if TARGET_MAXBCM
 	default "theadorable" if TARGET_THEADORABLE
+	default "ts7840" if TARGET_TS7840
 	default "turris_omnia" if TARGET_TURRIS_OMNIA
 
 config SYS_VENDOR
@@ -162,6 +168,7 @@ config SYS_VENDOR
 	default "solidrun" if TARGET_CLEARFOG
 	default "Synology" if TARGET_DS414
 	default "CZ.NIC" if TARGET_TURRIS_OMNIA
+	default "technologic" if TARGET_TS7840
 
 config SYS_SOC
 	default "mvebu"

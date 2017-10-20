@@ -1,0 +1,6 @@
+TS-7840 BOARD
+M:	Mark Featherston <mark@embeddedarm.com>
+S:	Maintained
+F:	board/technologic/ts7840/
+F:	include/configs/ts7840.h
+F:	configs/ts7840_defconfig
