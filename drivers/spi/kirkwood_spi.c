@@ -257,6 +257,9 @@ static int mvebu_spi_set_speed(struct udevice *bus, uint hz)
 	struct kwspi_registers *reg = plat->spireg;
 	u32 data;
 
+	if(!hz)
+		return 0;
+
 	/* calculate spi clock prescaller using max_hz */
 	data = ((CONFIG_SYS_TCLK / 2) / hz) + 0x10;
 	data = data < KWSPI_CLKPRESCL_MIN ? KWSPI_CLKPRESCL_MIN : data;
