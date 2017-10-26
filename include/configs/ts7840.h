@@ -155,55 +155,54 @@
 	"usbprod=usb start;" \
 		"if usb storage;" \
 			"then echo Checking USB storage for updates;" \
-			"if load usb 0:1 ${loadaddr} /tsinit.ub;" \
+			"if load usb 0:1 ${scriptaddr} /tsinit.ub;" \
 				"then led green on;" \
-				"source ${loadaddr};" \
+				"source ${scriptaddr};" \
 				"led red off;" \
 				"exit;" \
 			"fi;" \
 		"fi;\0" \
 	"emmcboot=echo Booting from the eMMC ...;" \
-		"if load mmc 0:1 ${loadaddr} /boot/boot.ub;" \
+		"if load mmc 0:1 ${scriptaddr} /boot/boot.ub;" \
 			"then echo Booting from custom /boot/boot.ub;" \
-			"source ${loadaddr};" \
+			"source ${scriptaddr};" \
 		"fi;" \
-		"if load mmc 0:1 ${loadaddr} /boot/ts7970-fpga.vme;" \
-			"then fpga load 0 ${loadaddr} ${filesize};" \
-		"fi;" \
-		"load mmc 0:1 ${fdtaddr} /boot/imx6${cpu}-ts7970.dtb;" \
-		"load mmc 0:1 ${loadaddr} /boot/uImage;" \
+		"load mmc 0:1 ${fdt_addr_r} /boot/armada-385-ts7840.dtb;" \
+		"load mmc 0:1 ${kernel_addr_r} /boot/zImage;" \
 		"setenv bootargs root=/dev/mmcblk0p1 ${cmdline_append};" \
-		"bootm ${loadaddr} - ${fdtaddr};\0" \
+		"bootz ${kernel_addr_r} - ${fdt_addr_r};\0" \
+	"sdroot=echo Booting kernel/dtb from eMMC and rootfs from SD;" \
+		"load mmc 0:1 ${fdt_addr_r} /boot/armada-385-ts7840.dtb;" \
+		"load mmc 0:1 ${kernel_addr_r} /boot/zImage;" \
+		"setenv bootargs root=/dev/tssdcarda1 ${cmdline_append};" \
+		"bootz ${kernel_addr_r} - ${fdt_addr_r};\0" \
 	"sataboot=echo Booting from SATA ...;" \
 		"sata init;" \
-		"if load sata 0:1 ${loadaddr} /boot/boot.ub;" \
+		"if load sata 0:1 ${scriptaddr} /boot/boot.ub;" \
 			"then echo Booting from custom /boot/boot.ub;" \
-			"source ${loadaddr};" \
+			"source ${scriptaddr};" \
 		"fi;" \
-		"if load sata 0:1 ${loadaddr} /boot/ts7970-fpga.vme;" \
-			"then fpga load 0 ${loadaddr} ${filesize};" \
-		"fi;" \
-		"load sata 0:1 ${fdtaddr} /boot/imx6${cpu}-ts7970.dtb;" \
-		"load sata 0:1 ${loadaddr} /boot/uImage;" \
+		"load sata 0:1 ${fdt_addr_r} /boot/armada-385-ts7840.dtb;" \
+		"load sata 0:1 ${kernel_addr_r} /boot/zImage;" \
 		"setenv bootargs root=/dev/sda1 rootwait ${cmdline_append};" \
-		"bootm ${loadaddr} - ${fdtaddr};\0" \
+		"bootz ${kernel_addr_r} - ${fdt_addr_r};\0" \
 	"usbprod=usb start;" \
 		"if usb storage;" \
 			"then echo Checking USB storage for updates;" \
-			"if load usb 0:1 ${loadaddr} /tsinit.ub;" \
+			"if load usb 0:1 ${scriptaddr} /tsinit.ub;" \
 				"then led green on;" \
-				"source ${loadaddr};" \
+				"source ${scriptaddr};" \
 				"led red off;" \
 				"exit;" \
 			"fi;" \
 		"fi;\0" \
 	"nfsboot=echo Booting from NFS ...;" \
 		"dhcp;" \
-		"nfs ${fdtaddr} ${nfsroot}/boot/armada-385-${MODEL}.dtb;" \
-		"nfs ${loadaddr} ${nfsroot}/boot/zImage;" \
+		"nfs ${fdt_addr_r} ${nfsroot}/boot/armada-385-ts7840.dtb;" \
+		"nfs ${kernel_addr_r} ${nfsroot}/boot/zImage;" \
 		"setenv bootargs root=/dev/nfs ip=dhcp nfsroot=${nfsroot} " \
 			"${cmdline_append};" \
-		"bootz ${loadaddr} - ${fdtaddr}; \0"
+		"bootz ${kernel_addr_r} - ${fdt_addr_r};\0"
 
 #define CONFIG_BOOTCOMMAND \
 	"run nfsboot;"
