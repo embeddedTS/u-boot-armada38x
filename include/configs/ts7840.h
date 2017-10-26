@@ -10,8 +10,8 @@
 /*
  * High Level Configuration Options (easy to change)
  */
-
 #define CONFIG_DISPLAY_BOARDINFO_LATE
+#define CONFIG_BOARD_LATE_INIT
 
 /*
  * TEXT_BASE needs to be below 16MiB, since this area is scrubbed
@@ -19,9 +19,10 @@
  * U-Boot into it.
  */
 #define	CONFIG_SYS_TEXT_BASE		0x00800000
-#define CONFIG_SYS_TCLK			250000000	/* 200MHz */
+#define CONFIG_SYS_TCLK			250000000
 
 #define CONFIG_NR_DRAM_BANKS		1
+#define CONFIG_SYS_ALT_MEMTEST
 
 /*
  * Commands configuration
@@ -35,9 +36,9 @@
 #define CONFIG_SYS_I2C_SPEED		100000
 
 /* SPI NOR flash default params, used by sf commands */
-#define CONFIG_SF_DEFAULT_SPEED		1000000
-#define CONFIG_SF_DEFAULT_MODE		SPI_MODE_3
 #define CONFIG_SPI_FLASH_STMICRO
+#define CONFIG_SPI_FLASH_MACRONIX
+#define CONFIG_SPI_FLASH_SPANSION
 
 /*
  * SDIO/MMC Card Configuration
@@ -45,22 +46,16 @@
 #define CONFIG_SYS_MMC_BASE		MVEBU_SDIO_BASE
 #define CONFIG_SUPPORT_EMMC_BOOT
 
-/* Partition support */
-
-/* Additional FS support/configuration */
+/* Additional part/FS support/configuration */
+#define CONFIG_PARTITION_TYPE_GUID
 #define CONFIG_SUPPORT_VFAT
+#define CONFIG_FAT_WRITE
+#define CONFIG_CMD_EXT4_WRITE
+#define CONFIG_CMD_FS_UUID
 
 /* USB/EHCI configuration */
 #define CONFIG_EHCI_IS_TDI
 
-#define CONFIG_ENV_MIN_ENTRIES		128
-
-/* Env is at the 1MB boundary in emmc boot partition 0 */
-#define CONFIG_SYS_MMC_ENV_DEV  	0 /* mmcblk0 */
-#define CONFIG_SYS_MMC_ENV_PART 	1 /* boot0 */
-#define CONFIG_ENV_OFFSET		0x400000 /* 8MiB */
-#define CONFIG_ENV_SIZE			0x20000
-#define CONFIG_ENV_OFFSET_REDUND 	0x800000 /* 12MiB */
 #define CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 
 #define CONFIG_PHY_MARVELL		/* there is a marvell phy */
@@ -72,24 +67,10 @@
 #define CONFIG_PCI_SCAN_SHOW
 #endif
 
-#define CONFIG_SYS_ALT_MEMTEST
-
 /* Keep device tree and initrd in lower memory so the kernel can access them */
 #define RELOCATION_LIMITS_ENV_SETTINGS	\
 	"fdt_high=0x10000000\0"		\
 	"initrd_high=0x10000000\0"
-
-/* SPL */
-/*
- * Select the boot device here
- *
- * Currently supported are:
- * SPL_BOOT_SPI_NOR_FLASH	- Booting via SPI NOR flash
- * SPL_BOOT_SDIO_MMC_CARD	- Booting via SDIO/MMC card (partition 1)
- */
-#define SPL_BOOT_SPI_NOR_FLASH		1
-#define SPL_BOOT_SDIO_MMC_CARD		2
-#define CONFIG_SPL_BOOT_DEVICE		SPL_BOOT_SDIO_MMC_CARD
 
 #define CONFIG_NET_RANDOM_ETHADDR
 
@@ -98,8 +79,6 @@
 #define CONFIG_SPL_SIZE			(140 << 10)
 #define CONFIG_SPL_TEXT_BASE		0x40000030
 #define CONFIG_SPL_MAX_SIZE		(CONFIG_SPL_SIZE - 0x0030)
-/*#define CONFIG_SPL_MAX_SIZE 	(1024*500)*/
-
 #define CONFIG_SPL_BSS_START_ADDR	(0x40000000 + CONFIG_SPL_SIZE)
 #define CONFIG_SPL_BSS_MAX_SIZE		(16 << 10)
 
@@ -110,20 +89,30 @@
 #define CONFIG_SPL_STACK		(0x40000000 + ((192 - 16) << 10))
 #define CONFIG_SPL_BOOTROM_SAVE		(CONFIG_SPL_STACK + 4)
 
-#if CONFIG_SPL_BOOT_DEVICE == SPL_BOOT_SPI_NOR_FLASH
-/* SPL related SPI defines */
-#define CONFIG_SPL_SPI_LOAD
-#define CONFIG_SYS_SPI_U_BOOT_OFFS	0x20000
-#define CONFIG_SYS_U_BOOT_OFFS		CONFIG_SYS_SPI_U_BOOT_OFFS
-#endif
-
-#if CONFIG_SPL_BOOT_DEVICE == SPL_BOOT_SDIO_MMC_CARD
-/* SPL related MMC defines */
-#define CONFIG_SYS_MMC_U_BOOT_OFFS		(160 << 10)
-#define CONFIG_SYS_U_BOOT_OFFS			CONFIG_SYS_MMC_U_BOOT_OFFS
+#ifdef CONFIG_ENV_IS_IN_MMC /* MMC build options */
+#define CONFIG_SYS_MMC_U_BOOT_OFFS	(160 << 10)
+#define CONFIG_SYS_U_BOOT_OFFS		CONFIG_SYS_MMC_U_BOOT_OFFS
+/* Env is at the 1MB boundary in emmc boot partition 0 */
+#define CONFIG_SYS_MMC_ENV_DEV		0 /* mmcblk0 */
+#define CONFIG_SYS_MMC_ENV_PART		1 /* boot0 */
+#define CONFIG_SYS_REDUNDAND_ENVIRONMENT
+#define CONFIG_ENV_OFFSET		0x400000 /* 8MiB */
+#define CONFIG_ENV_SIZE			0x20000 /* 128KiB */
+#define CONFIG_ENV_SECT_SIZE		CONFIG_ENV_SIZE
+#define CONFIG_ENV_OFFSET_REDUND 	0x800000 /* 12MiB */
 #ifdef CONFIG_SPL_BUILD
 #define CONFIG_FIXED_SDHCI_ALIGNED_BUFFER	0x00180000	/* in SDRAM */
 #endif
+#else /* SPI Build options */
+#define CONFIG_SPL_SPI_LOAD
+#define CONFIG_SYS_SPI_U_BOOT_OFFS	0x20000
+#define CONFIG_SYS_U_BOOT_OFFS		CONFIG_SYS_SPI_U_BOOT_OFFS
+
+#define CONFIG_ENV_OFFSET		0x100000 /* 1MiB */
+#define CONFIG_ENV_SIZE			0x20000 /* 128KiB */
+#define CONFIG_ENV_SECT_SIZE		0x10000 /* 64KiB sectors */
+#undef CONFIG_SYS_KWD_CONFIG
+#define CONFIG_SYS_KWD_CONFIG		$(CONFIG_BOARDDIR)/kwbimage-spi.cfg
 #endif
 
 /*
@@ -158,7 +147,6 @@
 	LOAD_ADDRESS_ENV_SETTINGS \
 	"fdt_high=0x10000000\0"		\
 	"initrd_high=0x10000000\0" \
-	"model=7840\0" \
 	"nfsroot=192.168.0.36:/mnt/storage/a38x\0" \
 	"autoload=no\0" \
 	"ethact=ethernet@70000\0" \
