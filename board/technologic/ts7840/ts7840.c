@@ -77,14 +77,14 @@ struct hws_topology_map *ddr3_get_topology_map(void)
 int board_early_init_f(void)
 {
 	/* Configure MPP */
-	writel(0x11111111, MVEBU_MPP_BASE + 0x00);
-	writel(0x11111111, MVEBU_MPP_BASE + 0x04);
-	writel(0x11120001, MVEBU_MPP_BASE + 0x08);
-	writel(0x22222201, MVEBU_MPP_BASE + 0x0c);
-	writel(0x22220000, MVEBU_MPP_BASE + 0x10);
-	writel(0x00000004, MVEBU_MPP_BASE + 0x14);
-	writel(0x55000500, MVEBU_MPP_BASE + 0x18);
-	writel(0x00005550, MVEBU_MPP_BASE + 0x1c);
+	writel(0x11111111, MVEBU_MPP_BASE + 0x00); /* 7:0 */
+	writel(0x11111111, MVEBU_MPP_BASE + 0x04); /* 15:8 */
+	writel(0x11120001, MVEBU_MPP_BASE + 0x08); /* 23:16 */
+	writel(0x22222211, MVEBU_MPP_BASE + 0x0c); /* 31:24 */
+	writel(0x22220000, MVEBU_MPP_BASE + 0x10); /* 39:32 */
+	writel(0x00000004, MVEBU_MPP_BASE + 0x14); /* 47:40 */
+	writel(0x55000500, MVEBU_MPP_BASE + 0x18); /* 55:48 */
+	writel(0x00005550, MVEBU_MPP_BASE + 0x1c); /* 63:56 */
 
 	/* Set GPP Out value */
 	writel(BOARD_GPP_OUT_VAL_LOW, MVEBU_GPIO0_BASE + 0x00);
