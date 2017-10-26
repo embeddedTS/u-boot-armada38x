@@ -143,15 +143,23 @@
 	"scriptaddr=" SCRIPT_ADDR_R "\0" \
 	"pxefile_addr_r=" PXEFILE_ADDR_R "\0"
 
+#ifdef CONFIG_ENV_IS_IN_MMC
+#define CLEARENV_SCRIPT \
+	"clearenv=mmc dev 0 1; mmc erase 2000 2000; mmc erase 4000 2000;\0"
+#else
+#define CLEARENV_SCRIPT \
+	"clearenv=sf probe; sf erase 100000 0x20000\0"
+#endif
+
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	LOAD_ADDRESS_ENV_SETTINGS \
-	"fdt_high=0x10000000\0"		\
+	"fdt_high=0x10000000\0"	\
 	"initrd_high=0x10000000\0" \
 	"nfsroot=192.168.0.36:/mnt/storage/a38x\0" \
 	"autoload=no\0" \
 	"ethact=ethernet@70000\0" \
 	"cmdline_append=console=ttyS0,115200 init=/sbin/init\0" \
-	"clearenv=mmc dev 0 1; mmc erase 2000 2000; mmc erase 4000 2000;\0" \
+	CLEARENV_SCRIPT \
 	"usbprod=usb start;" \
 		"if usb storage;" \
 			"then echo Checking USB storage for updates;" \
