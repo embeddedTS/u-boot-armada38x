@@ -109,6 +109,16 @@ int board_init(void)
 	return 0;
 }
 
+int board_late_init(void)
+{
+#ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
+	env_set("board_revision", "P1");
+	env_set("board_name", "TS-7840");
+	env_set("board_model", "7840");
+#endif
+	return 0;
+}
+
 int checkboard(void)
 {
 	return 0;
