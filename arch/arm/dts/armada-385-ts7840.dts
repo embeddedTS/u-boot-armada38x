@@ -219,6 +219,7 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&spi0_pins>;
 	status = "okay";
+	u-boot,dm-pre-reloc;
 
 	flash: n25q064@0 {
 		#address-cells = <1>;
@@ -226,5 +227,6 @@
 		compatible = "st,n25q064";
 		spi-max-frequency = <1000000>;
 		reg = <0>;
+		u-boot,dm-pre-reloc;
 	};
 };
