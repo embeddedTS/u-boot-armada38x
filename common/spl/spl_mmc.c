@@ -314,6 +314,11 @@ int spl_mmc_load_image(struct spl_image_info *spl_image,
 			if (part == 7)
 				part = 0;
 
+			if (part == 0) {
+			   part = 1;
+			   printf("force part -> %d\n", part);
+			}
+
 			if (CONFIG_IS_ENABLED(MMC_TINY))
 				err = mmc_switch_part(mmc, part);
 			else
