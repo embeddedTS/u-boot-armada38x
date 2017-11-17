@@ -222,6 +222,7 @@ u16 sys_env_model_get(void)
  */
 u32 sys_env_device_id_get(void)
 {
+	uint32_t sar1;
 	char *device_id_str[7] = {
 		"6810", "6820", "6811", "6828", "NONE", "6920", "6928"
 	};
@@ -229,9 +230,9 @@ u32 sys_env_device_id_get(void)
 	if (g_dev_id != -1)
 		return g_dev_id;
 
-	g_dev_id = reg_read(DEVICE_SAMPLE_AT_RESET1_REG);
+	sar1 = g_dev_id = reg_read(DEVICE_SAMPLE_AT_RESET1_REG);
 	g_dev_id = g_dev_id >> SAR_DEV_ID_OFFS & SAR_DEV_ID_MASK;
-	printf("Detected Device ID %s\n", device_id_str[g_dev_id]);
+	printf("Detected Device ID %s (SAR1 0x%X)\n", device_id_str[g_dev_id], sar1);
 
 	return g_dev_id;
 }
