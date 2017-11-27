@@ -85,3 +85,5 @@ GTAGS
 *.orig
 *~
 \#*#
+
+drivers/ddr/mv-ddr-marvell/mv_ddr_build_message.c
