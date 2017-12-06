@@ -194,6 +194,16 @@
 		"load sata 0:1 ${kernel_addr_r} /boot/zImage;" \
 		"setenv bootargs root=/dev/sda1 rw rootwait ${cmdline_append};" \
 		"bootz ${kernel_addr_r} - ${fdt_addr_r};\0" \
+	"usbboot=echo Booting from USB ...;" \
+		"usb start;" \
+		"if load usb 0:1 ${scriptaddr} /boot/boot.ub;" \
+			"then echo Booting from custom /boot/boot.ub;" \
+			"source ${scriptaddr};" \
+		"fi;" \
+		"load usb 0:1 ${fdt_addr_r} /boot/armada-385-ts7800-v2.dtb;" \
+		"load usb 0:1 ${kernel_addr_r} /boot/zImage;" \
+		"setenv bootargs root=/dev/sda1 rw rootwait ${cmdline_append};" \
+		"bootz ${kernel_addr_r} - ${fdt_addr_r};\0" \
 	"usbprod=usb start;" \
 		"if usb storage;" \
 			"then echo Checking USB storage for updates;" \
