@@ -130,6 +130,10 @@
 						       "mpp57", "mpp58", "mpp59";
 					marvell,function = "sd0";
 				};
+				vbus_pins0: vbus-pins0 {
+					marvell,pins = "mpp45";
+					marvell,function = "gpio";
+				};
 			};
 
 
@@ -153,11 +157,16 @@
 				u-boot,dm-pre-reloc;
 			};
 
-			usb@58000 {
+			usb@58000 {                     /* USB 2.0 Host/Device port 0 */
 				status = "okay";
 			};
 
-			usb3@f0000 {
+			usb3@f0000 {                    /* USB 3.0 Host Port 0 */
+				status = "okay";
+				usb-phy = <&usb3_phy>;
+			};
+
+			usb3@f8000 {                    /* USB 3.0 Host Port 1 */
 				status = "okay";
 				usb-phy = <&usb3_phy>;
 			};
@@ -192,21 +201,20 @@
 
 	usb3_phy: usb3_phy {
 		compatible = "usb-nop-xceiv";
-		/* Set up a vcc_supply for U16 on the FPGA */
-		/*vcc-supply = <&reg_xhci0_vbus>; */
+		vcc-supply = <&reg_7800v2_vbus>;
 	};
 
-	/* Hook up to EN_USB_5V on FPGA
-	reg_xhci0_vbus: xhci0-vbus {
+	/* EN_USB_HOST_5V is on MPP[45] */
+	reg_7800v2_vbus: 7800v2-vbus {
 		compatible = "regulator-fixed";
 		pinctrl-names = "default";
-		pinctrl-0 = <&xhci0_vbus_pins>;
-		regulator-name = "xhci0-vbus";
+		pinctrl-0 = <&vbus_pins0>;
+		regulator-name = "7800v2-vbus";
 		regulator-min-microvolt = <5000000>;
 		regulator-max-microvolt = <5000000>;
 		enable-active-high;
-		gpio = <&gpio1 12 GPIO_ACTIVE_HIGH>;
-	};*/
+		gpio = <&gpio1 13 GPIO_ACTIVE_HIGH>;
+	};
 };
 
 &spi0 {
