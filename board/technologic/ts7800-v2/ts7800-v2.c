@@ -15,6 +15,8 @@
 #include "../drivers/ddr/mv-ddr-marvell/ddr3_init.h"
 #include <../serdes/a38x/high_speed_env_spec.h>
 
+#include "tsfpga.h"
+
 DECLARE_GLOBAL_DATA_PTR;
 
 #define TS7800_V2_SYSCON_BASE   (MBUS_PCI_MEM_BASE + 0x100000)
@@ -31,7 +33,6 @@ DECLARE_GLOBAL_DATA_PTR;
 #define BOARD_GPP_OUT_VAL_MID	0x0
 #define BOARD_GPP_POL_LOW	0x0
 #define BOARD_GPP_POL_MID	0x0
-
 
 static struct serdes_map board_serdes_map[] = {
 	{PEX0, SERDES_SPEED_5_GBPS, PEX_ROOT_COMPLEX_X1, 0, 0},
@@ -74,11 +75,6 @@ struct mv_ddr_topology_map *mv_ddr_topology_map_get(void)
 {
 	/* Return the board topology as defined in the board code */
 	return &ts7800_noecc_topology_map;
-}
-
-static inline unsigned int syscon_read(int offset)
-{
-   return *(volatile unsigned int *)(TS7800_V2_SYSCON_BASE + offset);
 }
 
 int board_early_init_f(void)
@@ -213,8 +209,8 @@ int board_init(void)
 
 int board_late_init(void)
 {
-   char tmp_buf[10];
-   unsigned int syscon_reg;
+	char tmp_buf[10];
+	unsigned int syscon_reg;
 
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 	env_set("board_revision", "P1");
@@ -222,9 +218,9 @@ int board_late_init(void)
 	env_set("board_model", "7800-V2");
 #endif
 
-  	writel(0, SOC_REGS_PHY_BASE + 0xa381c);   /* Test Configuration Reg in RTC */
+	writel(0, SOC_REGS_PHY_BASE + 0xa381c);   /* Test Configuration Reg in RTC */
 
-  	syscon_reg = syscon_read(0);
+	syscon_reg = fpga_peek32(0);
 	
 	printf("fpga_rev=0x%02X\n"
 	       "board_id=0x%04X\n", syscon_reg & 0xFF, (syscon_reg >> 8) & 0xFFFF);
@@ -236,14 +232,13 @@ int board_late_init(void)
 	   "0x%04X", (syscon_reg >> 8) & 0xFFFF);       
 	env_set("board_id", tmp_buf);
 	
-	syscon_reg = syscon_read(4);
+	syscon_reg = fpga_peek32(4);
 
 	strcpy(tmp_buf, (syscon_reg & (1 << 30))?"on":"off");
 	env_set("jp_sdboot", tmp_buf);
 	
 	strcpy(tmp_buf, (syscon_reg & (1 << 31))?"on":"off");
 	env_set("jp_uboot", tmp_buf);
-
 
 	return 0;
 }

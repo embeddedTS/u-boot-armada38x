@@ -5,3 +5,4 @@
 #
 
 obj-y	:= ts7800-v2.o
+obj-$(CONFIG_LED_STATUS) += led.o
