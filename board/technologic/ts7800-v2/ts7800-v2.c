@@ -11,6 +11,7 @@
 #include <asm/io.h>
 #include <asm/arch/cpu.h>
 #include <asm/arch/soc.h>
+#include <watchdog.h>
 
 #include "../drivers/ddr/mv-ddr-marvell/ddr3_init.h"
 #include <../serdes/a38x/high_speed_env_spec.h>
@@ -195,7 +196,7 @@ int board_early_init_f(void)
 	writel(BOARD_GPP_OUT_ENA_LOW, MVEBU_GPIO0_BASE + 0x04);
 	writel(BOARD_GPP_OUT_ENA_MID, MVEBU_GPIO1_BASE + 0x04);
 #endif
-	
+
 	return 0;
 }
 
@@ -239,6 +240,8 @@ int board_late_init(void)
 	
 	strcpy(tmp_buf, (syscon_reg & (1 << 31))?"on":"off");
 	env_set("jp_uboot", tmp_buf);
+
+	hw_watchdog_init();
 
 	return 0;
 }

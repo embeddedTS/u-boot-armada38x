@@ -29,6 +29,14 @@ config TANGIER_WATCHDOG
 	  Intel Tangier SoC. If you're using a board with Intel Tangier
 	  SoC, say Y here.
 
+config TS7800V2_WATCHDOG
+	bool "TS-7800-V2 Micro watchdog"
+	select HW_WATCHDOG
+	help
+	  This enables support for watchdog controller available on
+	  the TS-7800-V2, TS-7840, and similar systems.  Say Y here
+	  to enable this supervisory micro based watchdog driver
+
 config ULP_WATCHDOG
 	bool "i.MX7ULP watchdog"
 	help
