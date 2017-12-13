@@ -39,17 +39,11 @@ void hw_watchdog_reset(void)
 
 void hw_watchdog_init(void)
 {
-	uint8_t buf[4];
 	/* Specified in 10ms increments */
-	const uint32_t timeout = CONFIG_WATCHDOG_TIMEOUT_MSECS / 10;
+	uint32_t timeout = CONFIG_WATCHDOG_TIMEOUT_MSECS / 10;
 	i2c_set_bus_num(0);
 
-	buf[0] = timeout;
-	buf[1] = timeout >> 8;
-	buf[2] = timeout >> 16;
-	buf[3] = timeout >> 24;
-
-	i2c_write(0x54, 1024, 2, buf, 4);
+	i2c_write(0x54, 1024, 2, (uint8_t *)&timeout, 4);
 	wdtinit = 1;
 	lastfeed = get_timer(0);
 }
