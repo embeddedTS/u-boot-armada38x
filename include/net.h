@@ -802,6 +802,10 @@ static inline int is_valid_ethaddr(const u8 *addr)
 	return !is_multicast_ethaddr(addr) && !is_zero_ethaddr(addr);
 }
 
+/* Allow boards to override this.  A timer may not be random enough for
+ * multiple boards of the same type booting at the same time */
+__attribute__((weak)) uint32_t board_rng_seed(void);
+
 /**
  * net_random_ethaddr - Generate software assigned random Ethernet address
  * @addr: Pointer to a six-byte array containing the Ethernet address
@@ -812,7 +816,10 @@ static inline int is_valid_ethaddr(const u8 *addr)
 static inline void net_random_ethaddr(uchar *addr)
 {
 	int i;
-	unsigned int seed = get_timer(0);
+	unsigned int seed = 0;
+
+	seed = board_rng_seed();
+	if(!seed) seed = get_timer(0);
 
 	for (i = 0; i < 6; i++)
 		addr[i] = rand_r(&seed);
