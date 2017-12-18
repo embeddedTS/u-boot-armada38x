@@ -246,6 +246,11 @@ int board_late_init(void)
 	return 0;
 }
 
+uint32_t board_rng_seed(void)
+{
+	fpga_peek32(0x44);
+}
+
 int checkboard(void)
 {
 	return 0;
