@@ -36,6 +36,7 @@
 #define CONFIG_SYS_I2C_SPEED		100000
 
 /* SPI NOR flash default params, used by sf commands */
+#define CONFIG_SPI_FLASH_ISSI
 #define CONFIG_SPI_FLASH_STMICRO
 #define CONFIG_SPI_FLASH_MACRONIX
 #define CONFIG_SPI_FLASH_SPANSION
