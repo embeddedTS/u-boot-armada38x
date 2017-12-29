@@ -19,13 +19,21 @@
 #endif
 #include <asm/arch-mvebu/spi.h>
 
+int activecs = 0;
+
 static void _spi_cs_activate(struct kwspi_registers *reg)
 {
+	if(activecs == 1) {
+		writel(0x10000000, 0xf1018134);
+	}
 	setbits_le32(&reg->ctrl, KWSPI_CSN_ACT);
 }
 
 static void _spi_cs_deactivate(struct kwspi_registers *reg)
 {
+	if(activecs == 1) {
+		writel(0x10000000, 0xf1018130);
+	}
 	clrbits_le32(&reg->ctrl, KWSPI_CSN_ACT);
 }
 
@@ -305,6 +313,11 @@ static int mvebu_spi_claim_bus(struct udevice *dev)
 {
 	struct udevice *bus = dev->parent;
 	struct mvebu_spi_platdata *plat = dev_get_platdata(bus);
+	struct kwspi_registers *reg = plat->spireg;
+
+	/* This driver doesn't have support for GPIO CS so
+	 * I'm overriding cs1 with gpio since we do not use this */
+	activecs = spi_chip_select(dev);
 
 	/* Configure the chip-select in the CTRL register */
 	clrsetbits_le32(&plat->spireg->ctrl,
@@ -318,6 +331,9 @@ static int mvebu_spi_probe(struct udevice *bus)
 {
 	struct mvebu_spi_platdata *plat = dev_get_platdata(bus);
 	struct kwspi_registers *reg = plat->spireg;
+
+	/* Set MPP_28 as an output */
+	writel(0x10000000, 0xf101812c);
 
 	writel(KWSPI_SMEMRDY, &reg->ctrl);
 	writel(KWSPI_SMEMRDIRQ, &reg->irq_cause);
