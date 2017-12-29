@@ -297,7 +297,6 @@ static int mvebu_spi_claim_bus(struct udevice *dev)
 {
 	struct udevice *bus = dev->parent;
 	struct mvebu_spi_platdata *plat = dev_get_platdata(bus);
-	struct kwspi_registers *reg = plat->spireg;
 
 	/* This driver doesn't have support for GPIO CS so
 	 * I'm overriding cs1 with gpio since we do not use this */
