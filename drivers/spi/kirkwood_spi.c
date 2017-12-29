@@ -261,22 +261,6 @@ struct mvebu_spi_priv {
 
 static int mvebu_spi_set_speed(struct udevice *bus, uint hz)
 {
-	struct mvebu_spi_platdata *plat = dev_get_platdata(bus);
-	struct kwspi_registers *reg = plat->spireg;
-	u32 data;
-
-	if(!hz)
-		return 0;
-
-	/* calculate spi clock prescaller using max_hz */
-	data = ((CONFIG_SYS_TCLK / 2) / hz) + 0x10;
-	data = data < KWSPI_CLKPRESCL_MIN ? KWSPI_CLKPRESCL_MIN : data;
-	data = data > KWSPI_CLKPRESCL_MASK ? KWSPI_CLKPRESCL_MASK : data;
-
-	/* program spi clock prescaler using max_hz */
-	writel(KWSPI_ADRLEN_3BYTE | data, &reg->cfg);
-	debug("data = 0x%08x\n", data);
-
 	return 0;
 }
 
