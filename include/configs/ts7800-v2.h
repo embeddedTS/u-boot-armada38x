@@ -125,8 +125,6 @@
 /* Include the common distro boot environment */
 #ifndef CONFIG_SPL_BUILD
 
-#define CONFIG_NFS_TIMEOUT 100UL
-
 /*#define CONFIG_MISC_INIT_R*/
 
 #define KERNEL_ADDR_R	__stringify(0x800000)
