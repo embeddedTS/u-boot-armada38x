@@ -144,7 +144,7 @@
 
 #ifdef CONFIG_ENV_IS_IN_MMC
 #define CLEARENV_SCRIPT \
-	"clearenv=mmc dev 0 1; mmc erase 2000 2000; mmc erase 4000 2000;\0"
+	"clearenv=mmc dev 0 1; mmc erase 2000 2000; mmc erase 3000 2000;\0"
 #else
 #define CLEARENV_SCRIPT \
 	"clearenv=sf probe; sf erase 100000 0x20000\0"
