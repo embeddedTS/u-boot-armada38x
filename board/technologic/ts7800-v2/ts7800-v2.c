@@ -252,9 +252,12 @@ int board_late_init(void)
 	} else {
 		uint8_t mac[6];
 		i2c_read(0x54, 1536, 2, (uint8_t *)&mac, 6);
-		if(mac[0] == 0 && mac[1] == 0 &&
+		if((mac[0] == 0 && mac[1] == 0 &&
 		   mac[2] == 0 && mac[3] == 0 &&
-		   mac[4] == 0 && mac[5] == 0) {
+		   mac[4] == 0 && mac[5] == 0) ||
+		   (mac[0] == 0xff && mac[1] == 0xff &&
+		   mac[2] == 0xff && mac[3] == 0xff &&
+		   mac[4] == 0xff && mac[5] == 0xff)) {
 			printf("No MAC programmed to board\n");
 		} else {
 			uchar enetaddr[6];
