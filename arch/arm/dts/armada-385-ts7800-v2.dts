@@ -48,8 +48,6 @@
 	compatible = "technologic,a385-ts7800-v2", "marvell,armada385", "marvell,armada380";
 
 	aliases {
-		ethernet1 = &eth0;
-		ethernet2 = &eth1;
 		ethernet3 = &eth2;
 		spi0 = &spi0;
 	};
@@ -90,15 +88,6 @@
 			rtc@a3800 {
 			   status = "okay";
 			};
-			
-			/* sgmii port to eth switch */
-			ethernet@34000 {
-				status = "okay";
-				phy = <&phy2>;
-				phy-mode = "sgmii";
-				bm,pool-long = <2>;
-				bm,pool-short = <3>;
-			};
 
 			i2c0: i2c@11000 {
 				pinctrl-names = "default";
@@ -110,17 +99,8 @@
 				pinctrl-names = "default";
 				pinctrl-0 = <&mdio_pins>;
 
-				phy0: ethernet-phy@0 {
-					reg = <0>;
-				};
-
 				phy1: ethernet-phy@1 {
 					reg = <1>;
-				};
-
-				/* eth switch */
-				phy2: ethernet-phy@2 {
-					reg = <2>;
 				};
 			};
 
