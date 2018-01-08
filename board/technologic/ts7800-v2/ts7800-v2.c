@@ -241,6 +241,10 @@ int board_late_init(void)
 	strcpy(tmp_buf, (syscon_reg & (1 << 31))?"on":"off");
 	env_set("jp_uboot", tmp_buf);
 
+	/* Enable EN_USB_5V */
+	writel(0x2000, 0xf101816c);
+	writel(0x2000, 0xf1018170);
+
 	hw_watchdog_init();
 
 	return 0;
