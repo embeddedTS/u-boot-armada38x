@@ -150,6 +150,15 @@
 	"clearenv=sf probe; sf erase 100000 0x20000\0"
 #endif
 
+#undef CONFIG_PREBOOT
+#define CONFIG_PREBOOT \
+	"if test ${jp_uboot} = 'on'; then " \
+		"setenv bootdelay -1;" \
+		"run usbprod;" \
+	"else " \
+		"setenv bootdelay 0;" \
+	"fi"
+
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	LOAD_ADDRESS_ENV_SETTINGS \
 	"fdt_high=0x10000000\0"	\
@@ -222,7 +231,10 @@
 		"bootz ${kernel_addr_r} - ${fdt_addr_r};\0"
 
 #define CONFIG_BOOTCOMMAND \
-	"run nfsboot;"
+	"if test ${jp_sdboot} = 'on';" \
+		"then run sdroot;" \
+		"else run emmcboot;" \
+	"fi;"
 
 /* Miscellaneous configurable options */
 #define CONFIG_SYS_LONGHELP
