@@ -210,6 +210,7 @@ int board_init(void)
 
 int board_late_init(void)
 {
+	int ret;
 	char tmp_buf[10];
 	unsigned int syscon_reg;
 
@@ -244,6 +245,29 @@ int board_late_init(void)
 	/* Enable EN_USB_5V */
 	writel(0x2000, 0xf101816c);
 	writel(0x2000, 0xf1018170);
+
+	ret = i2c_probe(0x54);
+	if(ret) {
+		printf("Failed to probe silabs at 0x54\n");
+	} else {
+		uint8_t mac[6];
+		i2c_read(0x54, 1536, 2, (uint8_t *)&mac, 6);
+		if(mac[0] == 0 && mac[1] == 0 &&
+		   mac[2] == 0 && mac[3] == 0 &&
+		   mac[4] == 0 && mac[5] == 0) {
+			printf("No MAC programmed to board\n");
+		} else {
+			uchar enetaddr[6];
+			enetaddr[5] = mac[0];
+			enetaddr[4] = mac[1];
+			enetaddr[3] = mac[2];
+			enetaddr[2] = mac[3];
+			enetaddr[1] = mac[4];
+			enetaddr[0] = mac[5];
+
+			eth_env_set_enetaddr("ethaddr", enetaddr);
+		}
+	}
 
 	hw_watchdog_init();
 
