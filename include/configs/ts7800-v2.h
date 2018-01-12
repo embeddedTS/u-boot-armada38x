@@ -60,7 +60,7 @@
 #define CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 
 #define CONFIG_PHY_MARVELL		/* there is a marvell phy */
-#define PHY_ANEG_TIMEOUT	8000	/* PHY needs a longer aneg time */
+#define PHY_ANEG_TIMEOUT	15000	/* PHY needs a longer aneg time */
 
 /* PCIe support */
 #ifndef CONFIG_SPL_BUILD
@@ -74,6 +74,7 @@
 	"initrd_high=0x10000000\0"
 
 #define CONFIG_NET_RANDOM_ETHADDR
+#define CONFIG_NFS_TIMEOUT 100UL
 
 /* Defines for SPL */
 #define CONFIG_SPL_FRAMEWORK
