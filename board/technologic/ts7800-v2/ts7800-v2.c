@@ -35,17 +35,38 @@ DECLARE_GLOBAL_DATA_PTR;
 #define BOARD_GPP_POL_LOW	0x0
 #define BOARD_GPP_POL_MID	0x0
 
+#define BOOTFLAG_REG		1543
+#define BOOTFLAG_EN_MPCIE	0x1
+#define BOOTFLAG_EN_ECC		0x2
+
 static struct serdes_map board_serdes_map[] = {
-	{PEX0, SERDES_SPEED_5_GBPS, PEX_ROOT_COMPLEX_X1, 0, 0},
+	{SATA0, SERDES_SPEED_3_GBPS, SERDES_DEFAULT_MODE, 0, 0},
 	{USB3_HOST0, SERDES_SPEED_5_GBPS, SERDES_DEFAULT_MODE, 0, 0},
 	{SATA1, SERDES_SPEED_3_GBPS, SERDES_DEFAULT_MODE, 0, 0},
 	{USB3_HOST1, SERDES_SPEED_5_GBPS, SERDES_DEFAULT_MODE, 0, 0},
-	{PEX1, SERDES_SPEED_5_GBPS, PEX_ROOT_COMPLEX_X1, 0, 0},
+	{PEX1, SERDES_SPEED_5_GBPS, PEX_ROOT_COMPLEX_X1, 0, 0}, /* Not connected */
 	{PEX2, SERDES_SPEED_5_GBPS, PEX_ROOT_COMPLEX_X1, 0, 0},
 };
 
+uint8_t get_bootflags(void)
+{
+	static uint8_t runonce = 0;
+	static uint8_t bootflags = 0;
+	if(runonce != 1) {
+		i2c_read(0x54, BOOTFLAG_REG, 2, &bootflags, 1);
+		runonce = 1;
+	}
+	return bootflags;
+}
+
 int hws_board_topology_load(struct serdes_map **serdes_map_array, u8 *count)
 {
+	if(get_bootflags() & BOOTFLAG_EN_MPCIE) {
+		board_serdes_map[0].serdes_type = PEX0;
+		board_serdes_map[0].serdes_speed = SERDES_SPEED_5_GBPS;
+		board_serdes_map[0].serdes_mode = PEX_ROOT_COMPLEX_X1;
+	}
+
 	*serdes_map_array = board_serdes_map;
 	*count = ARRAY_SIZE(board_serdes_map);
 	return 0;
@@ -225,7 +246,11 @@ int board_late_init(void)
 	syscon_reg = fpga_peek32(0);
 	
 	printf("fpga_rev=0x%02X\n"
-	       "board_id=0x%04X\n", syscon_reg & 0xFF, (syscon_reg >> 8) & 0xFFFF);
+	       "board_id=0x%04X\n"
+	       "bootflags=0x%X\n",
+	       syscon_reg & 0xFF,
+	       (syscon_reg >> 8) & 0xFFFF,
+	       get_bootflags());
 	
 	snprintf(tmp_buf, sizeof(tmp_buf), 
 	   "0x%02X", syscon_reg & 0xFF);       
