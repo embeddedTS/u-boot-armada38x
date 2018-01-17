@@ -178,6 +178,7 @@
 	"initrd_high=0x10000000\0" \
 	"nfsroot=192.168.0.36:/mnt/storage/a38x\0" \
 	"autoload=no\0" \
+	"satadev=0\0" \
 	"ethact=ethernet@70000\0" \
 	"cmdline_append=console=ttyS0,115200\0" \
 	CLEARENV_SCRIPT \
@@ -206,14 +207,16 @@
 		"setenv bootargs root=/dev/mmcblk0p1 ro rootwait init=/boot/sdroot.rc  ${cmdline_append};" \
 		"bootz ${kernel_addr_r} - ${fdt_addr_r};\0" \
 	"sataboot=echo Booting from SATA ...;" \
-		"sata init;" \
-		"if load sata 0:1 ${scriptaddr} /boot/boot.ub;" \
+		"scsi scan;" \
+		"scsi dev ${satadev};" \
+		"part uuid scsi ${satadev}:1 partuuid;" \
+		"if load scsi ${satadev}:1 ${scriptaddr} /boot/boot.ub;" \
 			"then echo Booting from custom /boot/boot.ub;" \
 			"source ${scriptaddr};" \
 		"fi;" \
-		"load sata 0:1 ${fdt_addr_r} /boot/armada-385-ts7800-v2.dtb;" \
-		"load sata 0:1 ${kernel_addr_r} /boot/zImage;" \
-		"setenv bootargs root=/dev/sda1 rw rootwait ${cmdline_append};" \
+		"load scsi ${satadev}:1 ${fdt_addr_r} /boot/armada-385-ts7800-v2.dtb;" \
+		"load scsi ${satadev}:1 ${kernel_addr_r} /boot/zImage;" \
+		"setenv bootargs root=PARTUUID=${partuuid} rw rootwait ${cmdline_append};" \
 		"bootz ${kernel_addr_r} - ${fdt_addr_r};\0" \
 	"usbboot=echo Booting from USB ...;" \
 		"usb start;" \
@@ -221,9 +224,10 @@
 			"then echo Booting from custom /boot/boot.ub;" \
 			"source ${scriptaddr};" \
 		"fi;" \
+		"part uuid usb 0:1 partuuid;" \
 		"load usb 0:1 ${fdt_addr_r} /boot/armada-385-ts7800-v2.dtb;" \
 		"load usb 0:1 ${kernel_addr_r} /boot/zImage;" \
-		"setenv bootargs root=/dev/sda1 rw rootwait ${cmdline_append};" \
+		"setenv bootargs root=PARTUUID=${partuuid} rw rootwait ${cmdline_append};" \
 		"bootz ${kernel_addr_r} - ${fdt_addr_r};\0" \
 	"usbprod=usb start;" \
 		"if usb storage;" \
