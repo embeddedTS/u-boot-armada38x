@@ -243,7 +243,7 @@
 		"dhcp;" \
 		"nfs ${fdt_addr_r} ${nfsroot}/boot/armada-385-ts7800-v2.dtb;" \
 		"nfs ${kernel_addr_r} ${nfsroot}/boot/zImage;" \
-		"setenv bootargs root=/dev/nfs ip=dhcp nfsroot=${nfsroot} " \
+		"setenv bootargs root=/dev/nfs rw ip=dhcp nfsroot=${nfsroot} " \
 			"${cmdline_append};" \
 		"bootz ${kernel_addr_r} - ${fdt_addr_r};\0"
 
