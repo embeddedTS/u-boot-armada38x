@@ -25,8 +25,6 @@ void reset_misc(void)
 	uint32_t timeout = 1;
 	uint8_t val = 0x1;
 
-	printf("Silabs reset...\n");
-
 	i2c_write(0x54, 1024, 2, (uint8_t *)&timeout, 4);
 	i2c_write(0x54, 1028, 2, &val, 1);
 
