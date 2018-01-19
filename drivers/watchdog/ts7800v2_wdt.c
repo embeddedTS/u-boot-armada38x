@@ -18,6 +18,22 @@ static int refcnt = 0;
 static int wdtinit = 0;
 static ulong lastfeed;
 
+void reset_misc(void)
+{
+	/* timeout 0 == watchdog off.  1 is 10ms,
+	 * the smallest amount we can arm for */
+	uint32_t timeout = 1;
+	uint8_t val = 0x1;
+
+	printf("Silabs reset...\n");
+
+	i2c_write(0x54, 1024, 2, (uint8_t *)&timeout, 4);
+	i2c_write(0x54, 1028, 2, &val, 1);
+
+	while(1)
+		mdelay(1000);
+}
+
 void hw_watchdog_reset(void)
 {
 	uint8_t val = 0x1;
