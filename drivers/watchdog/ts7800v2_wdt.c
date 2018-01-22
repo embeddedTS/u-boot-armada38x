@@ -28,8 +28,7 @@ void reset_misc(void)
 	i2c_write(0x54, 1024, 2, (uint8_t *)&timeout, 4);
 	i2c_write(0x54, 1028, 2, &val, 1);
 
-	while(1)
-		mdelay(1000);
+	while(1);
 }
 
 void hw_watchdog_reset(void)
