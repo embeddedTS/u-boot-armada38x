@@ -271,6 +271,12 @@ int board_late_init(void)
 	writel(0x2000, 0xf101816c);
 	writel(0x2000, 0xf1018170);
 
+#ifndef CONFIG_ENV_IS_IN_SPI_FLASH
+	/* Routes CPU pins to FPGA SPI flash.  Happens on normal boots
+	 * but not when using the SPI daughter card */
+	fpga_poke32(0x8, 0xBFFFFFFF);
+#endif
+
 	ret = i2c_probe(0x54);
 	if(ret) {
 		printf("Failed to probe silabs at 0x54\n");
