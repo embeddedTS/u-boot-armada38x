@@ -182,16 +182,6 @@
 	"ethact=ethernet@70000\0" \
 	"cmdline_append=console=ttyS0,115200\0" \
 	CLEARENV_SCRIPT \
-	"usbprod=usb start;" \
-		"if usb storage;" \
-			"then echo Checking USB storage for updates;" \
-			"if load usb 0:1 ${scriptaddr} /tsinit.ub;" \
-				"then led green on;" \
-				"source ${scriptaddr};" \
-				"led red off;" \
-				"exit;" \
-			"fi;" \
-		"fi;\0" \
 	"emmcboot=echo Booting from the eMMC ...;" \
 		"if load mmc 0:1 ${scriptaddr} /boot/boot.ub;" \
 			"then echo Booting from custom /boot/boot.ub;" \
@@ -233,9 +223,9 @@
 		"if usb storage;" \
 			"then echo Checking USB storage for updates;" \
 			"if load usb 0:1 ${scriptaddr} /tsinit.ub;" \
-				"then led green on;" \
+				"then led 0 on;" \
 				"source ${scriptaddr};" \
-				"led red off;" \
+				"led 1 off;" \
 				"exit;" \
 			"fi;" \
 		"fi;\0" \
