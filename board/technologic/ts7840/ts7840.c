@@ -11,11 +11,17 @@
 #include <asm/io.h>
 #include <asm/arch/cpu.h>
 #include <asm/arch/soc.h>
+#include <watchdog.h>
 
 #include "../drivers/ddr/mv-ddr-marvell/ddr3_init.h"
 #include <../serdes/a38x/high_speed_env_spec.h>
 
+#include "tsfpga.h"
+
 DECLARE_GLOBAL_DATA_PTR;
+
+#define TS7800_V2_SYSCON_BASE   (MBUS_PCI_MEM_BASE + 0x100000)
+#define TS7800_V2_SYSCON_SIZE   0x48
 
 #define ETH_PHY_CTRL_REG		0
 #define ETH_PHY_CTRL_POWER_DOWN_BIT	11
@@ -60,7 +66,7 @@ static struct mv_ddr_topology_map ts7840_ecc_topology_map = {
 	    DDR_FREQ_800,		/* frequency */
 	    0, 0,			/* cas_l cas_wl */
 	    MV_DDR_TEMP_LOW} },		/* temperature */
-	BUS_MASK_32BIT_ECC,			/* subphys mask */
+	BUS_MASK_32BIT_ECC,		/* subphys mask */
 	MV_DDR_CFG_DEFAULT,		/* ddr configuration data source */
 	{ {0} },			/* raw spd data */
 	{0}				/* timing parameters */
@@ -109,20 +115,57 @@ int board_init(void)
 
 int board_late_init(void)
 {
+	uint32_t dat;
+	char tmp_buf[10];
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 	env_set("board_revision", "P1");
 	env_set("board_name", "TS-7840");
 	env_set("board_model", "7840");
 #endif
+
+	dat = fpga_peek32(4);
+	strcpy(tmp_buf, (dat & (1 << 30))?"on":"off");
+	env_set("jp_sdboot", tmp_buf);
+	
+	strcpy(tmp_buf, (dat & (1 << 31))?"on":"off");
+	env_set("jp_uboot", tmp_buf);
+
+	if(i2c_probe(0x54)) {
+		printf("Failed to probe silabs at 0x54\n");
+	} else {
+		uint8_t mac[6];
+		i2c_read(0x54, 1536, 2, (uint8_t *)&mac, 6);
+		if((mac[0] == 0 && mac[1] == 0 &&
+		   mac[2] == 0 && mac[3] == 0 &&
+		   mac[4] == 0 && mac[5] == 0) ||
+		   (mac[0] == 0xff && mac[1] == 0xff &&
+		   mac[2] == 0xff && mac[3] == 0xff &&
+		   mac[4] == 0xff && mac[5] == 0xff)) {
+			printf("No MAC programmed to board\n");
+		} else {
+			uchar enetaddr[6];
+			enetaddr[5] = mac[0];
+			enetaddr[4] = mac[1];
+			enetaddr[3] = mac[2];
+			enetaddr[2] = mac[3];
+			enetaddr[1] = mac[4];
+			enetaddr[0] = mac[5];
+
+			eth_env_set_enetaddr("ethaddr", enetaddr);
+		}
+	}
+
+	hw_watchdog_init();
+
 	return 0;
+}
+
+uint32_t board_rng_seed(void)
+{
+	return fpga_peek32(0x44);
 }
 
 int checkboard(void)
 {
 	return 0;
-}
-
-int board_eth_init(bd_t *bis)
-{
-	return cpu_eth_init(bis);
 }

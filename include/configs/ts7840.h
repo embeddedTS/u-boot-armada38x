@@ -36,6 +36,7 @@
 #define CONFIG_SYS_I2C_SPEED		100000
 
 /* SPI NOR flash default params, used by sf commands */
+#define CONFIG_SPI_FLASH_ISSI
 #define CONFIG_SPI_FLASH_STMICRO
 #define CONFIG_SPI_FLASH_MACRONIX
 #define CONFIG_SPI_FLASH_SPANSION
@@ -67,12 +68,24 @@
 #define CONFIG_PCI_SCAN_SHOW
 #endif
 
+/* SATA support */
+#ifdef CONFIG_SCSI
+#define CONFIG_LIBATA
+#define CONFIG_SCSI_AHCI
+#define CONFIG_SCSI_AHCI_PLAT
+#define CONFIG_SYS_SCSI_MAX_SCSI_ID	2
+#define CONFIG_SYS_SCSI_MAX_LUN		1
+#define CONFIG_SYS_SCSI_MAX_DEVICE	(CONFIG_SYS_SCSI_MAX_SCSI_ID * \
+					CONFIG_SYS_SCSI_MAX_LUN)
+#endif
+
 /* Keep device tree and initrd in lower memory so the kernel can access them */
 #define RELOCATION_LIMITS_ENV_SETTINGS	\
 	"fdt_high=0x10000000\0"		\
 	"initrd_high=0x10000000\0"
 
 #define CONFIG_NET_RANDOM_ETHADDR
+#define CONFIG_NFS_TIMEOUT 100UL
 
 /* Defines for SPL */
 #define CONFIG_SPL_FRAMEWORK
@@ -124,10 +137,6 @@
 /* Include the common distro boot environment */
 #ifndef CONFIG_SPL_BUILD
 
-#define CONFIG_NFS_TIMEOUT 100UL
-
-/*#define CONFIG_MISC_INIT_R*/
-
 #define KERNEL_ADDR_R	__stringify(0x800000)
 #define FDT_ADDR_R	__stringify(0x100000)
 #define RAMDISK_ADDR_R	__stringify(0x1800000)
@@ -145,7 +154,7 @@
 
 #ifdef CONFIG_ENV_IS_IN_MMC
 #define CLEARENV_SCRIPT \
-	"clearenv=mmc dev 0 1; mmc erase 2000 2000; mmc erase 4000 2000;\0"
+	"clearenv=mmc dev 0 1; mmc erase 2000 2000; mmc erase 3000 2000;\0"
 #else
 #define CLEARENV_SCRIPT \
 	"clearenv=sf probe; sf erase 100000 0x20000\0"
@@ -157,19 +166,10 @@
 	"initrd_high=0x10000000\0" \
 	"nfsroot=192.168.0.36:/mnt/storage/a38x\0" \
 	"autoload=no\0" \
+	"satadev=0\0" \
 	"ethact=ethernet@70000\0" \
-	"cmdline_append=console=ttyS0,115200 init=/sbin/init\0" \
+	"cmdline_append=console=ttyS0,115200\0" \
 	CLEARENV_SCRIPT \
-	"usbprod=usb start;" \
-		"if usb storage;" \
-			"then echo Checking USB storage for updates;" \
-			"if load usb 0:1 ${scriptaddr} /tsinit.ub;" \
-				"then led green on;" \
-				"source ${scriptaddr};" \
-				"led red off;" \
-				"exit;" \
-			"fi;" \
-		"fi;\0" \
 	"emmcboot=echo Booting from the eMMC ...;" \
 		"if load mmc 0:1 ${scriptaddr} /boot/boot.ub;" \
 			"then echo Booting from custom /boot/boot.ub;" \
@@ -185,22 +185,35 @@
 		"setenv bootargs root=/dev/tssdcarda1 ${cmdline_append};" \
 		"bootz ${kernel_addr_r} - ${fdt_addr_r};\0" \
 	"sataboot=echo Booting from SATA ...;" \
-		"sata init;" \
-		"if load sata 0:1 ${scriptaddr} /boot/boot.ub;" \
+		"scsi scan;" \
+		"scsi dev ${satadev};" \
+		"part uuid scsi ${satadev}:1 partuuid;" \
+		"if load scsi ${satadev}:1 ${scriptaddr} /boot/boot.ub;" \
 			"then echo Booting from custom /boot/boot.ub;" \
 			"source ${scriptaddr};" \
 		"fi;" \
-		"load sata 0:1 ${fdt_addr_r} /boot/armada-385-ts7840.dtb;" \
-		"load sata 0:1 ${kernel_addr_r} /boot/zImage;" \
-		"setenv bootargs root=/dev/sda1 rootwait ${cmdline_append};" \
+		"load scsi ${satadev}:1 ${fdt_addr_r} /boot/armada-385-ts7840.dtb;" \
+		"load scsi ${satadev}:1 ${kernel_addr_r} /boot/zImage;" \
+		"setenv bootargs root=PARTUUID=${partuuid} rw rootwait ${cmdline_append};" \
+		"bootz ${kernel_addr_r} - ${fdt_addr_r};\0" \
+	"usbboot=echo Booting from USB ...;" \
+		"usb start;" \
+		"if load usb 0:1 ${scriptaddr} /boot/boot.ub;" \
+			"then echo Booting from custom /boot/boot.ub;" \
+			"source ${scriptaddr};" \
+		"fi;" \
+		"part uuid usb 0:1 partuuid;" \
+		"load usb 0:1 ${fdt_addr_r} /boot/armada-385-ts7800-v2.dtb;" \
+		"load usb 0:1 ${kernel_addr_r} /boot/zImage;" \
+		"setenv bootargs root=PARTUUID=${partuuid} rw rootwait ${cmdline_append};" \
 		"bootz ${kernel_addr_r} - ${fdt_addr_r};\0" \
 	"usbprod=usb start;" \
 		"if usb storage;" \
 			"then echo Checking USB storage for updates;" \
 			"if load usb 0:1 ${scriptaddr} /tsinit.ub;" \
-				"then led green on;" \
+				"then led 0 on;" \
 				"source ${scriptaddr};" \
-				"led red off;" \
+				"led 1 off;" \
 				"exit;" \
 			"fi;" \
 		"fi;\0" \
@@ -208,12 +221,15 @@
 		"dhcp;" \
 		"nfs ${fdt_addr_r} ${nfsroot}/boot/armada-385-ts7840.dtb;" \
 		"nfs ${kernel_addr_r} ${nfsroot}/boot/zImage;" \
-		"setenv bootargs root=/dev/nfs ip=dhcp nfsroot=${nfsroot} " \
+		"setenv bootargs root=/dev/nfs rw ip=dhcp nfsroot=${nfsroot} " \
 			"${cmdline_append};" \
 		"bootz ${kernel_addr_r} - ${fdt_addr_r};\0"
 
 #define CONFIG_BOOTCOMMAND \
-	"run nfsboot;"
+	"if test ${jp_sdboot} = 'on';" \
+		"then run sdroot;" \
+		"else run emmcboot;" \
+	"fi;"
 
 /* Miscellaneous configurable options */
 #define CONFIG_SYS_LONGHELP
