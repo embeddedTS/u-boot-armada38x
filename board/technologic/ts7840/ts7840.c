@@ -66,7 +66,7 @@ static struct mv_ddr_topology_map ts7840_ecc_topology_map = {
 	    DDR_FREQ_800,		/* frequency */
 	    0, 0,			/* cas_l cas_wl */
 	    MV_DDR_TEMP_LOW} },		/* temperature */
-	BUS_MASK_32BIT_ECC,		/* subphys mask */
+	BUS_MASK_32BIT,		/* subphys mask */
 	MV_DDR_CFG_DEFAULT,		/* ddr configuration data source */
 	{ {0} },			/* raw spd data */
 	{0}				/* timing parameters */
@@ -76,6 +76,21 @@ struct mv_ddr_topology_map *mv_ddr_topology_map_get(void)
 {
 	/* Return the board topology as defined in the board code */
 	return &ts7840_ecc_topology_map;
+}
+
+void board_spi_cs_activate(int cs)
+{
+	if(cs == 1) {
+		writel(0x1, 0xe8100028);
+		writel(0x0, 0xe8100018);
+	}
+}
+
+void board_spi_cs_deactivate(int cs)
+{
+	if(cs == 1) {
+		writel(0x1, 0xe8100018);
+	}
 }
 
 int board_early_init_f(void)
@@ -123,39 +138,46 @@ int board_late_init(void)
 	env_set("board_model", "7840");
 #endif
 
-	dat = fpga_peek32(4);
-	strcpy(tmp_buf, (dat & (1 << 30))?"on":"off");
-	env_set("jp_sdboot", tmp_buf);
+	dat = fpga_peek32(0);
 	
-	strcpy(tmp_buf, (dat & (1 << 31))?"on":"off");
-	env_set("jp_uboot", tmp_buf);
+	printf("fpga_rev=%d\n"
+	       "board_id=0x%04X\n",
+	       dat & 0xFF,
+	       (dat >> 8) & 0xFFFF);
 
-	if(i2c_probe(0x54)) {
-		printf("Failed to probe silabs at 0x54\n");
-	} else {
-		uint8_t mac[6];
-		i2c_read(0x54, 1536, 2, (uint8_t *)&mac, 6);
-		if((mac[0] == 0 && mac[1] == 0 &&
-		   mac[2] == 0 && mac[3] == 0 &&
-		   mac[4] == 0 && mac[5] == 0) ||
-		   (mac[0] == 0xff && mac[1] == 0xff &&
-		   mac[2] == 0xff && mac[3] == 0xff &&
-		   mac[4] == 0xff && mac[5] == 0xff)) {
-			printf("No MAC programmed to board\n");
-		} else {
-			uchar enetaddr[6];
-			enetaddr[5] = mac[0];
-			enetaddr[4] = mac[1];
-			enetaddr[3] = mac[2];
-			enetaddr[2] = mac[3];
-			enetaddr[1] = mac[4];
-			enetaddr[0] = mac[5];
 
-			eth_env_set_enetaddr("ethaddr", enetaddr);
-		}
-	}
-
-	hw_watchdog_init();
+//	dat = fpga_peek32(4);
+//	strcpy(tmp_buf, (dat & (1 << 30))?"on":"off");
+//	env_set("jp_sdboot", tmp_buf);
+//	strcpy(tmp_buf, (dat & (1 << 31))?"on":"off");
+//	env_set("jp_uboot", tmp_buf);
+//
+//	if(i2c_probe(0x54)) {
+//		printf("Failed to probe silabs at 0x54\n");
+//	} else {
+//		uint8_t mac[6];
+//		i2c_read(0x54, 1536, 2, (uint8_t *)&mac, 6);
+//		if((mac[0] == 0 && mac[1] == 0 &&
+//		   mac[2] == 0 && mac[3] == 0 &&
+//		   mac[4] == 0 && mac[5] == 0) ||
+//		   (mac[0] == 0xff && mac[1] == 0xff &&
+//		   mac[2] == 0xff && mac[3] == 0xff &&
+//		   mac[4] == 0xff && mac[5] == 0xff)) {
+//			printf("No MAC programmed to board\n");
+//		} else {
+//			uchar enetaddr[6];
+//			enetaddr[5] = mac[0];
+//			enetaddr[4] = mac[1];
+//			enetaddr[3] = mac[2];
+//			enetaddr[2] = mac[3];
+//			enetaddr[1] = mac[4];
+//			enetaddr[0] = mac[5];
+//
+//			eth_env_set_enetaddr("ethaddr", enetaddr);
+//		}
+//	}
+//
+//	hw_watchdog_init();
 
 	return 0;
 }
