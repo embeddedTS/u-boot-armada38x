@@ -99,6 +99,20 @@ struct mv_ddr_topology_map *mv_ddr_topology_map_get(void)
 	return &ts7800_noecc_topology_map;
 }
 
+void board_spi_cs_activate(int cs)
+{
+	if(cs == 1) {
+		writel(0x10000000, 0xf1018134);
+	}
+}
+
+void board_spi_cs_deactivate(int cs)
+{
+	if(cs == 1) {
+		writel(0x10000000, 0xf1018130);
+	}
+}
+
 int board_early_init_f(void)
 {
    /**

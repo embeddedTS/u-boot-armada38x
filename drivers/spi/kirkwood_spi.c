@@ -21,19 +21,26 @@
 
 int activecs = 0;
 
+
+__attribute__((weak)) void board_spi_cs_activate(int cs)
+{
+	return;
+}
+
 static void _spi_cs_activate(struct kwspi_registers *reg)
 {
-	if(activecs == 1) {
-		writel(0x10000000, 0xf1018134);
-	}
+	board_spi_cs_activate(activecs);
 	setbits_le32(&reg->ctrl, KWSPI_CSN_ACT);
+}
+
+__attribute__((weak)) void board_spi_cs_deactivate(int cs)
+{
+	return;
 }
 
 static void _spi_cs_deactivate(struct kwspi_registers *reg)
 {
-	if(activecs == 1) {
-		writel(0x10000000, 0xf1018130);
-	}
+	board_spi_cs_deactivate(activecs);
 	clrbits_le32(&reg->ctrl, KWSPI_CSN_ACT);
 }
 
