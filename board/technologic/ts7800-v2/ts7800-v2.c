@@ -36,8 +36,9 @@ DECLARE_GLOBAL_DATA_PTR;
 #define BOARD_GPP_POL_MID	0x0
 
 #define BOOTFLAG_REG		1543
-#define BOOTFLAG_EN_MPCIE	0x1
-#define BOOTFLAG_EN_ECC		0x2
+#define BOOTFLAG_EN_WDOG	0x1
+#define BOOTFLAG_EN_ECC		0x40
+#define BOOTFLAG_EN_MPCIE	0x80
 
 static struct serdes_map board_serdes_map[] = {
 	{SATA0, SERDES_SPEED_3_GBPS, SERDES_DEFAULT_MODE, 0, 0},
@@ -65,6 +66,7 @@ int hws_board_topology_load(struct serdes_map **serdes_map_array, u8 *count)
 		board_serdes_map[0].serdes_type = PEX0;
 		board_serdes_map[0].serdes_speed = SERDES_SPEED_5_GBPS;
 		board_serdes_map[0].serdes_mode = PEX_ROOT_COMPLEX_X1;
+		board_serdes_map[0].swap_rx = 1;
 	}
 
 	*serdes_map_array = board_serdes_map;
@@ -93,9 +95,34 @@ static struct mv_ddr_topology_map ts7800_noecc_topology_map = {
 	{0}				/* timing parameters */
 };
 
+/* Disables 32-bit DDR interface and uses 16-bit.  We normally have 1GB, but
+ * this lets us have 512MB and use the additional chip for ECC */
+static struct mv_ddr_topology_map ts7800_ecc_topology_map = {
+	DEBUG_LEVEL_INFO,
+	0x1, /* active interfaces */
+	/* cs_mask, mirror, dqs_swap, ck_swap X PUPs */
+	{ { { {0x1, 0, 0, 0},
+	      {0x1, 0, 0, 0},
+	      {0x1, 0, 0, 0},
+	      {0x1, 0, 0, 0},
+	      {0x1, 0, 0, 0} },
+	    SPEED_BIN_DDR_1600K,	/* speed_bin */
+	    MV_DDR_DEV_WIDTH_16BIT,	/* sdram device width */
+	    MV_DDR_DIE_CAP_4GBIT,	/* die capacity */
+	    DDR_FREQ_800,		/* frequency */
+	    0, 0,			/* cas_l cas_wl */
+	    MV_DDR_TEMP_LOW} },		/* temperature */
+	BUS_MASK_16BIT_ECC_PUP3,	/* subphys mask */
+	MV_DDR_CFG_DEFAULT,		/* ddr configuration data source */
+	{ {0} },			/* raw spd data */
+	{0}				/* timing parameters */
+};
+
 struct mv_ddr_topology_map *mv_ddr_topology_map_get(void)
 {
-	/* Return the board topology as defined in the board code */
+	/*if(get_bootflags() & BOOTFLAG_EN_ECC) {
+		return &ts7800_ecc_topology_map;
+	}*/
 	return &ts7800_noecc_topology_map;
 }
 
@@ -248,6 +275,7 @@ int board_late_init(void)
 	int ret;
 	char tmp_buf[10];
 	unsigned int syscon_reg;
+	uint8_t buf;
 
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 	env_set("board_revision", "P1");
@@ -260,11 +288,22 @@ int board_late_init(void)
 	syscon_reg = fpga_peek32(0);
 	
 	printf("fpga_rev=0x%02X\n"
-	       "board_id=0x%04X\n"
-	       "bootflags=0x%X\n",
+	       "board_id=0x%04X\n",
 	       syscon_reg & 0xFF,
-	       (syscon_reg >> 8) & 0xFFFF,
-	       get_bootflags());
+	       (syscon_reg >> 8) & 0xFFFF);
+
+	buf = get_bootflags();
+	puts("Bootflags: WDOG");
+
+	if(buf & BOOTFLAG_EN_WDOG) putc('+');
+	else putc('-');
+
+	puts(" ECC");
+	if(buf & BOOTFLAG_EN_ECC) putc('+');
+	else putc('-');
+
+	if(buf & BOOTFLAG_EN_MPCIE) puts(" PCIE+ MSATA-\n");
+	else puts(" PCIE- MSATA+\n");
 	
 	snprintf(tmp_buf, sizeof(tmp_buf), 
 	   "0x%02X", syscon_reg & 0xFF);       
