@@ -21,9 +21,6 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
-#define TS7800_V2_SYSCON_BASE   (MBUS_PCI_MEM_BASE + 0x100000)
-#define TS7800_V2_SYSCON_SIZE   0x48
-
 #define ETH_PHY_CTRL_REG		0
 #define ETH_PHY_CTRL_POWER_DOWN_BIT	11
 #define ETH_PHY_CTRL_POWER_DOWN_MASK	(1 << ETH_PHY_CTRL_POWER_DOWN_BIT)
@@ -50,7 +47,7 @@ static struct serdes_map board_serdes_map[] = {
    {PEX2, SERDES_SPEED_5_GBPS, PEX_ROOT_COMPLEX_X1, 0, 0},
 };
 
-unsigned char *syscon_base;
+volatile unsigned char *syscon_base;
 
 uint8_t get_bootflags(void)
 {
@@ -132,14 +129,14 @@ struct mv_ddr_topology_map *mv_ddr_topology_map_get(void)
 void board_spi_cs_activate(int cs)
 {
    if(cs == 1) {
-      writel(0x10000000, 0xf1018134);
+      writel(0x10000000, SOC_REGS_PHY_BASE + 0x18134);
    }
 }
 
 void board_spi_cs_deactivate(int cs)
 {
    if(cs == 1) {
-      writel(0x10000000, 0xf1018130);
+      writel(0x10000000, SOC_REGS_PHY_BASE + 0x18130);
    }
 }
 
@@ -281,32 +278,34 @@ int board_late_init(void)
    uint8_t buf;
    pci_dev_t dev;
 
+   struct pci_device_id ids[2] = {
+      {TS7800_V2_FPGA_VENDOR, TS7800_V2_FPGA_DEVICE},
+      {0, 0}
+   };
+
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
    env_set("board_revision", "P1");
    env_set("board_name", "TS-7800-V2");
    env_set("board_model", "7800-V2");
 #endif
 
-   syscon_base = (unsigned char*)TS7800_V2_SYSCON_BASE;   /* default, in case
-                                             we can't find it by a PCI scan */
+   writel(0, SOC_REGS_PHY_BASE + 0xa381c);   /* Test Configuration Reg in RTC */
 
-   dev = pci_find_device(0x1204, 0x0001, 0);
+   /* default, in case  we can't find it by a PCI scan */
+   syscon_base = TS7800_V2_SYSCON_BASE;
 
-   if (dev < 0)
+   if ((dev = pci_find_devices(ids, 0)) < 0)
       printf("Error:  Can't find FPGA!\n");
    else {
       unsigned int p = 0;
-
-      printf("Found FPGA at device %02x.%02x.%02x\n",
+      printf("Found FPGA at %02x.%02x.%02x 0x%08X\n",
                    PCI_BUS(dev), PCI_DEV(dev), PCI_FUNC(dev));
 
       if (pci_read_config_dword(dev, PCI_BASE_ADDRESS_2, &p) || p == 0)
          printf("Error reading FPGA address from PCI config-space\n");
       else
-         syscon_base = (unsigned char*)p;
+         syscon_base = (volatile unsigned char*)p;
    }
-
-   writel(0, SOC_REGS_PHY_BASE + 0xa381c);   /* Test Configuration Reg in RTC */
 
    syscon_reg = fpga_peek32(0);
 
@@ -344,8 +343,8 @@ int board_late_init(void)
    env_set("jp_uboot", tmp_buf);
 
    /* Enable EN_USB_5V */
-   writel(0x2000, 0xf101816c);
-   writel(0x2000, 0xf1018170);
+   writel(0x2000, SOC_REGS_PHY_BASE + 0x1816c);
+   writel(0x2000, SOC_REGS_PHY_BASE + 0x18170);
 
 #ifndef CONFIG_ENV_IS_IN_SPI_FLASH
    /* Routes CPU pins to FPGA SPI flash.  Happens on normal boots
@@ -359,12 +358,8 @@ int board_late_init(void)
    } else {
       uint8_t mac[6];
       i2c_read(0x54, 1536, 2, (uint8_t *)&mac, 6);
-      if((mac[0] == 0 && mac[1] == 0 &&
-         mac[2] == 0 && mac[3] == 0 &&
-         mac[4] == 0 && mac[5] == 0) ||
-         (mac[0] == 0xff && mac[1] == 0xff &&
-         mac[2] == 0xff && mac[3] == 0xff &&
-         mac[4] == 0xff && mac[5] == 0xff)) {
+
+      if (!is_valid_ethaddr(mac))      {
          printf("No MAC programmed to board\n");
       } else {
          uchar enetaddr[6];
