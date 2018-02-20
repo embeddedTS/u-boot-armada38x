@@ -298,7 +298,7 @@ int board_late_init(void)
       printf("Error:  Can't find FPGA!\n");
    else {
       unsigned int p = 0;
-      printf("Found FPGA at %02x.%02x.%02x 0x%08X\n",
+      printf("Found FPGA at %02x.%02x.%02x\n",
                    PCI_BUS(dev), PCI_DEV(dev), PCI_FUNC(dev));
 
       if (pci_read_config_dword(dev, PCI_BASE_ADDRESS_2, &p) || p == 0)
