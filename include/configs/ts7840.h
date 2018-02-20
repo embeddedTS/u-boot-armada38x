@@ -160,6 +160,15 @@
 	"clearenv=sf probe; sf erase 100000 0x20000\0"
 #endif
 
+#undef CONFIG_PREBOOT
+#define CONFIG_PREBOOT \
+	"if test ${jp_uboot} = 'on'; then " \
+		"setenv bootdelay -1;" \
+		"run usbprod;" \
+	"else " \
+		"setenv bootdelay 0;" \
+	"fi"
+
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	LOAD_ADDRESS_ENV_SETTINGS \
 	"fdt_high=0x10000000\0"	\
@@ -177,12 +186,12 @@
 		"fi;" \
 		"load mmc 0:1 ${fdt_addr_r} /boot/armada-385-ts7840.dtb;" \
 		"load mmc 0:1 ${kernel_addr_r} /boot/zImage;" \
-		"setenv bootargs root=/dev/mmcblk0p1 ${cmdline_append};" \
+		"setenv bootargs rootwait root=/dev/mmcblk0p1 ${cmdline_append};" \
 		"bootz ${kernel_addr_r} - ${fdt_addr_r};\0" \
 	"sdroot=echo Booting kernel/dtb from eMMC and rootfs from SD;" \
 		"load mmc 0:1 ${fdt_addr_r} /boot/armada-385-ts7840.dtb;" \
 		"load mmc 0:1 ${kernel_addr_r} /boot/zImage;" \
-		"setenv bootargs root=/dev/tssdcarda1 ${cmdline_append};" \
+		"setenv bootargs rootwait root=/dev/tssdcarda1 ${cmdline_append};" \
 		"bootz ${kernel_addr_r} - ${fdt_addr_r};\0" \
 	"sataboot=echo Booting from SATA ...;" \
 		"scsi scan;" \
