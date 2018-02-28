@@ -8,10 +8,12 @@
 #include <i2c.h>
 #include <miiphy.h>
 #include <netdev.h>
+#include <pci.h>
 #include <asm/io.h>
 #include <asm/arch/cpu.h>
 #include <asm/arch/soc.h>
 #include <watchdog.h>
+#include <status_led.h>
 
 #include "../drivers/ddr/mv-ddr-marvell/ddr3_init.h"
 #include <../serdes/a38x/high_speed_env_spec.h>
@@ -43,6 +45,8 @@ static struct serdes_map board_serdes_map[] = {
 	{PEX1, SERDES_SPEED_5_GBPS, PEX_ROOT_COMPLEX_X1, 0, 0},
 	{PEX2, SERDES_SPEED_5_GBPS, PEX_ROOT_COMPLEX_X1, 0, 0},
 };
+
+volatile unsigned char *syscon_base;
 
 int hws_board_topology_load(struct serdes_map **serdes_map_array, u8 *count)
 {
@@ -132,11 +136,37 @@ int board_late_init(void)
 {
 	uint32_t dat;
 	char tmp_buf[10];
+	pci_dev_t dev;
+
+	struct pci_device_id ids[2] = {
+		{TS7840_FPGA_VENDOR, TS7840_FPGA_DEVICE},
+		{0, 0}
+	};
+
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 	env_set("board_revision", "P1");
 	env_set("board_name", "TS-7840");
 	env_set("board_model", "7840");
 #endif
+
+	/* default, in case  we can't find it by a PCI scan */
+	syscon_base = TS7840_SYSCON_BASE;
+
+	if ((dev = pci_find_devices(ids, 0)) < 0) {
+		printf("Error:  Can't find FPGA!\n");
+	} else {
+		unsigned int p = 0;
+		printf("Found FPGA at %02x.%02x.%02x\n",
+			PCI_BUS(dev), PCI_DEV(dev), PCI_FUNC(dev));
+
+		if (pci_read_config_dword(dev, PCI_BASE_ADDRESS_2, &p) || p == 0)
+			printf("Error reading FPGA address from PCI config-space\n");
+		else
+			syscon_base = (volatile unsigned char*)p;
+	}
+
+	writel(0x2000, SOC_REGS_PHY_BASE + 0x1816c);
+	writel(0x2000, SOC_REGS_PHY_BASE + 0x18170);
 
 	dat = fpga_peek32(0);
 	
@@ -145,39 +175,64 @@ int board_late_init(void)
 	       dat & 0xFF,
 	       (dat >> 8) & 0xFFFF);
 
+	/* Read ISA_C bank */
+	dat = fpga_peek32(0x28);
 
-//	dat = fpga_peek32(4);
-//	strcpy(tmp_buf, (dat & (1 << 30))?"on":"off");
-//	env_set("jp_sdboot", tmp_buf);
-//	strcpy(tmp_buf, (dat & (1 << 31))?"on":"off");
-//	env_set("jp_uboot", tmp_buf);
-//
-//	if(i2c_probe(0x54)) {
-//		printf("Failed to probe silabs at 0x54\n");
-//	} else {
-//		uint8_t mac[6];
-//		i2c_read(0x54, 1536, 2, (uint8_t *)&mac, 6);
-//		if((mac[0] == 0 && mac[1] == 0 &&
-//		   mac[2] == 0 && mac[3] == 0 &&
-//		   mac[4] == 0 && mac[5] == 0) ||
-//		   (mac[0] == 0xff && mac[1] == 0xff &&
-//		   mac[2] == 0xff && mac[3] == 0xff &&
-//		   mac[4] == 0xff && mac[5] == 0xff)) {
-//			printf("No MAC programmed to board\n");
-//		} else {
-//			uchar enetaddr[6];
-//			enetaddr[5] = mac[0];
-//			enetaddr[4] = mac[1];
-//			enetaddr[3] = mac[2];
-//			enetaddr[2] = mac[3];
-//			enetaddr[1] = mac[4];
-//			enetaddr[0] = mac[5];
-//
-//			eth_env_set_enetaddr("ethaddr", enetaddr);
-//		}
-//	}
-//
-//	hw_watchdog_init();
+	/* Set 125MHz OE to 0, which outputs a high signal */
+	dat &= ~(0x6);
+	fpga_poke32(0x28, dat);
+
+	/* Take phy out of reset */
+	fpga_poke32(0x18, 0x2); /* Dat reg */
+	dat |= 0x2;
+	fpga_poke32(0x28, dat); /* oe */
+
+	/* Allow time for the phys to latch the startup values */
+	mdelay(1000);
+	/* Enable 125MHz clock for switch */
+	dat |= 0x4;
+	fpga_poke32(0x28, dat);
+
+	dat = fpga_peek32(4);
+	strcpy(tmp_buf, (dat & (1 << 30))?"on":"off");
+	env_set("jp_sdboot", tmp_buf);
+	strcpy(tmp_buf, (dat & (1 << 31))?"on":"off");
+	env_set("jp_uboot", tmp_buf);
+
+#ifndef CONFIG_ENV_IS_IN_SPI_FLASH
+	/* Routes CPU pins to FPGA SPI flash.  Happens on normal boots
+	* but not when using the SPI daughter card */
+	fpga_poke32(0x8, 0xBFFFFFFF);
+#endif
+
+	if(i2c_probe(0x54)) {
+		printf("Failed to probe silabs at 0x54\n");
+	} else {
+		uint8_t mac[6];
+		i2c_read(0x54, 1536, 2, (uint8_t *)&mac, 6);
+		if((mac[0] == 0 && mac[1] == 0 &&
+		   mac[2] == 0 && mac[3] == 0 &&
+		   mac[4] == 0 && mac[5] == 0) ||
+		   (mac[0] == 0xff && mac[1] == 0xff &&
+		   mac[2] == 0xff && mac[3] == 0xff &&
+		   mac[4] == 0xff && mac[5] == 0xff)) {
+			printf("No MAC programmed to board\n");
+		} else {
+			uchar enetaddr[6];
+			enetaddr[5] = mac[0];
+			enetaddr[4] = mac[1];
+			enetaddr[3] = mac[2];
+			enetaddr[2] = mac[3];
+			enetaddr[1] = mac[4];
+			enetaddr[0] = mac[5];
+
+			eth_env_set_enetaddr("ethaddr", enetaddr);
+		}
+	}
+
+	hw_watchdog_init();
+
+	__led_set(CONFIG_LED_STATUS_BIT1, 1);
 
 	return 0;
 }
