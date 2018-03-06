@@ -94,6 +94,28 @@ DECLARE_GLOBAL_DATA_PTR;
 #define LINK_SPEED_GEN_2                0x2
 #define LINK_SPEED_GEN_3                0x3
 
+#define PCIE_MSIX_CAP_ID_NEXT_CTRL_REG	0xb0
+#define PCIE_MSIX_CAP_NEXT_OFFSET_MASK	0xff00
+
+#define PCIE_SPCIE_CAP_HEADER_REG	0x158
+#define PCIE_SPCIE_NEXT_OFFSET_MASK	0xfff00000
+#define PCIE_SPCIE_NEXT_OFFSET_OFFSET	20
+
+#define PCIE_LANE_EQ_CTRL01_REG		0x164
+#define PCIE_LANE_EQ_CTRL23_REG		0x168
+#define PCIE_LANE_EQ_SETTING		0x55555555
+
+#define PCIE_TPH_EXT_CAP_HDR_REG	0x1b8
+#define PCIE_TPH_REQ_NEXT_PTR_MASK	0xfff00000
+#define PCIE_TPH_REQ_NEXT_PTR_OFFSET	20
+
+#define PCIE_GEN3_EQ_CONTROL_OFF_REG	0x8a8
+#define PCIE_GEN3_EQ_PSET_REQ_VEC_MASK	0xffff00
+#define PCIE_GEN3_EQ_PSET_REQ_VEC_OFFSET 8
+
+#define PCIE_LINK_FLUSH_CONTROL_OFF_REG	0x8cc
+#define PCIE_AUTO_FLUSH_EN_MASK		0x1
+
 /**
  * struct pcie_dw_mvebu - MVEBU DW PCIe controller state
  *
@@ -337,6 +359,80 @@ static int wait_link_up(const void *regs_base)
 	return 1;
 }
 
+static void pcie_dw_mvebu_pcie_config(const void *regs_base)
+{
+	u32 reg;
+
+	/*
+	 * Set the correct hints for lane equalization.
+	 *
+	 * These registers consist of the following fields:
+	 *	- Downstream Port Transmitter Preset - Used for equalization by
+	 *	  this port when the Port is operating as a downstream Port.
+	 *	- Downstream Port Receiver Preset Hint - May be used as a hint
+	 *	  for receiver equalization by this port when the Port is
+	 *	  operating as a downstream Port.
+	 *	- Upstream Port Transmitter Preset - Field contains the
+	 *	  transmit preset value sent or received during link
+	 *	  equalization.
+	 *	- Upstream Port Receiver Preset Hint - Field contains the
+	 *	  receiver preset hint value sent or received during link
+	 *	  equalization.
+	 *
+	 * The default values for this registers aren't optimal for our
+	 * hardware, so we set the optimal values according to HW measurements.
+	 */
+	writel(PCIE_LANE_EQ_SETTING, regs_base + PCIE_LANE_EQ_CTRL01_REG);
+	writel(PCIE_LANE_EQ_SETTING, regs_base + PCIE_LANE_EQ_CTRL23_REG);
+
+	/*
+	 * There is an issue in CPN110 that does not allow to
+	 * enable/disable the link and perform "hot reset" unless
+	 * the auto flush is disabled. So in order to enable the option
+	 * to perform hot reset and link disable/enable we need to set
+	 * auto flush to disable.
+	 */
+	reg = readl(regs_base + PCIE_LINK_FLUSH_CONTROL_OFF_REG);
+	reg &= ~PCIE_AUTO_FLUSH_EN_MASK;
+	writel(reg, regs_base + PCIE_LINK_FLUSH_CONTROL_OFF_REG);
+
+	/*
+	 * According to the electrical measurmentrs, the best preset that our
+	 * receiver can handle is preset4, so we are changing the vector of
+	 * presets to evaluate during the link equalization training to preset4.
+	 */
+	reg = readl(regs_base + PCIE_GEN3_EQ_CONTROL_OFF_REG);
+	reg &= ~PCIE_GEN3_EQ_PSET_REQ_VEC_MASK;
+	reg |= 0x10 << PCIE_GEN3_EQ_PSET_REQ_VEC_OFFSET;
+	writel(reg, regs_base + PCIE_GEN3_EQ_CONTROL_OFF_REG);
+
+	/*
+	 * Remove VPD capability from the capability list,
+	 * since we don't support it.
+	 */
+	reg = readl(regs_base + PCIE_MSIX_CAP_ID_NEXT_CTRL_REG);
+	reg &= ~PCIE_MSIX_CAP_NEXT_OFFSET_MASK;
+	writel(reg, regs_base + PCIE_MSIX_CAP_ID_NEXT_CTRL_REG);
+
+	/*
+	 * The below two configurations are intended to remove SRIOV capability
+	 * from the capability list, since we don't support it.
+	 * The capability list is a linked list where each capability points
+	 * to the next capability, so in the SRIOV capability need to set the
+	 * previous capability to point to the next capability and this way
+	 * the SRIOV capability will be skipped.
+	 */
+	reg = readl(regs_base + PCIE_TPH_EXT_CAP_HDR_REG);
+	reg &= ~PCIE_TPH_REQ_NEXT_PTR_MASK;
+	reg |= 0x24c << PCIE_TPH_REQ_NEXT_PTR_OFFSET;
+	writel(reg, regs_base + PCIE_TPH_EXT_CAP_HDR_REG);
+
+	reg = readl(regs_base + PCIE_SPCIE_CAP_HEADER_REG);
+	reg &= ~PCIE_SPCIE_NEXT_OFFSET_MASK;
+	reg |= 0x1b8 << PCIE_SPCIE_NEXT_OFFSET_OFFSET;
+	writel(reg, regs_base + PCIE_SPCIE_CAP_HEADER_REG);
+}
+
 /**
  * pcie_dw_mvebu_pcie_link_up() - Configure the PCIe root port
  *
@@ -366,6 +462,9 @@ static int pcie_dw_mvebu_pcie_link_up(const void *regs_base, u32 cap_speed)
 
 	/* DW pre link configurations */
 	pcie_dw_configure(regs_base, cap_speed);
+
+	/* Mvebu pre link specific configuration */
+	pcie_dw_mvebu_pcie_config(regs_base);
 
 	if (!is_link_up(regs_base)) {
 		/* Configuration done. Start LTSSM */
@@ -521,12 +620,12 @@ static int pcie_dw_mvebu_ofdata_to_platdata(struct udevice *dev)
 	struct pcie_dw_mvebu *pcie = dev_get_priv(dev);
 
 	/* Get the controller base address */
-	pcie->ctrl_base = (void *)devfdt_get_addr_index(dev, 0);
+	pcie->ctrl_base = (void *)dev_get_addr_index(dev, 0);
 	if ((fdt_addr_t)pcie->ctrl_base == FDT_ADDR_T_NONE)
 		return -EINVAL;
 
 	/* Get the config space base address and size */
-	pcie->cfg_base = (void *)devfdt_get_addr_size_index(dev, 1,
+	pcie->cfg_base = (void *)dev_get_addr_size_index(dev, 1,
 							 &pcie->cfg_size);
 	if ((fdt_addr_t)pcie->cfg_base == FDT_ADDR_T_NONE)
 		return -EINVAL;
