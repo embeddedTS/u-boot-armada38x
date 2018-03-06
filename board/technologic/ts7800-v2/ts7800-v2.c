@@ -98,7 +98,7 @@ static struct mv_ddr_topology_map ts7800_noecc_topology_map = {
 /* Disables 32-bit DDR interface and uses 16-bit.  We normally have 1GB, but
  * this lets us have 512MB and use the additional chip for ECC */
 static struct mv_ddr_topology_map ts7800_ecc_topology_map = {
-   DEBUG_LEVEL_INFO,
+   DEBUG_LEVEL_ERROR,
    0x1, /* active interfaces */
    /* cs_mask, mirror, dqs_swap, ck_swap X PUPs */
    { { { {0x1, 0, 0, 0},
@@ -120,9 +120,9 @@ static struct mv_ddr_topology_map ts7800_ecc_topology_map = {
 
 struct mv_ddr_topology_map *mv_ddr_topology_map_get(void)
 {
-   /*if(get_bootflags() & BOOTFLAG_EN_ECC) {
+   if(get_bootflags() & BOOTFLAG_EN_ECC) {
       return &ts7800_ecc_topology_map;
-   }*/
+   }
    return &ts7800_noecc_topology_map;
 }
 
