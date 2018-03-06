@@ -70,7 +70,7 @@ static struct mv_ddr_topology_map ts7840_ecc_topology_map = {
 	    DDR_FREQ_800,		/* frequency */
 	    0, 0,			/* cas_l cas_wl */
 	    MV_DDR_TEMP_LOW} },		/* temperature */
-	BUS_MASK_32BIT,		/* subphys mask */
+	BUS_MASK_32BIT_ECC,		/* subphys mask */
 	MV_DDR_CFG_DEFAULT,		/* ddr configuration data source */
 	{ {0} },			/* raw spd data */
 	{0}				/* timing parameters */
