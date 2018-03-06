@@ -113,6 +113,7 @@ static const struct sar_freq_modes sar_freq_tab[] = {
 	{  0x6,  0x0, 1200, 600, 600 },
 	{  0x8,  0x0, 1332, 666, 666 },
 	{  0xc,  0x0, 1600, 800, 800 },
+	{  0x10,  0x0, 1866, 933, 933 },
 	{ 0xff, 0xff,    0,   0,   0 }	/* 0xff marks end of array */
 };
 #else
