@@ -592,7 +592,7 @@ void enable_caches(void)
 	 */
 	if (mvebu_soc_family() != MVEBU_SOC_A375) {
 		/* Enable D-cache. I-cache is already enabled in start.S */
-		dcache_enable();
+		/*dcache_enable();*/
 	}
 }
 
