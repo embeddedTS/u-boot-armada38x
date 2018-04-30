@@ -37,9 +37,10 @@
 
 /* SPI NOR flash default params, used by sf commands */
 #define CONFIG_SPI_FLASH_ISSI
-#define CONFIG_SPI_FLASH_STMICRO
 #define CONFIG_SPI_FLASH_MACRONIX
 #define CONFIG_SPI_FLASH_SPANSION
+#define CONFIG_SPI_FLASH_SST
+#define CONFIG_SPI_FLASH_STMICRO
 
 /*
  * SDIO/MMC Card Configuration
