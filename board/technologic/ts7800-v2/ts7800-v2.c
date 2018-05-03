@@ -26,10 +26,10 @@ DECLARE_GLOBAL_DATA_PTR;
 #define ETH_PHY_CTRL_POWER_DOWN_MASK	(1 << ETH_PHY_CTRL_POWER_DOWN_BIT)
 
 #define BOARD_GPP_OUT_ENA_LOW	0xffffffff
-#define BOARD_GPP_OUT_ENA_MID	0xffffffff
+#define BOARD_GPP_OUT_ENA_MID	0xffffdfff
 
 #define BOARD_GPP_OUT_VAL_LOW	0x0
-#define BOARD_GPP_OUT_VAL_MID	0x0
+#define BOARD_GPP_OUT_VAL_MID	0x2000
 #define BOARD_GPP_POL_LOW	0x0
 #define BOARD_GPP_POL_MID	0x0
 
@@ -341,10 +341,6 @@ int board_late_init(void)
 
    strcpy(tmp_buf, (syscon_reg & (1 << 31))?"on":"off");
    env_set("jp_uboot", tmp_buf);
-
-   /* Enable EN_USB_5V */
-   writel(0x2000, SOC_REGS_PHY_BASE + 0x1816c);
-   writel(0x2000, SOC_REGS_PHY_BASE + 0x18170);
 
 #ifndef CONFIG_ENV_IS_IN_SPI_FLASH
    /* Routes CPU pins to FPGA SPI flash.  Happens on normal boots
