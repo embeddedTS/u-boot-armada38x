@@ -192,9 +192,9 @@
 		"load mmc 0:1 ${kernel_addr_r} /boot/zImage;" \
 		"setenv bootargs root=/dev/mmcblk0p1 rw rootwait ${cmdline_append};" \
 		"bootz ${kernel_addr_r} - ${fdt_addr_r};\0" \
-	"sdroot=echo Booting kernel/dtb from eMMC and rootfs from SD;" \
-		"load mmc 0:1 ${fdt_addr_r} /boot/armada-385-ts7800-v2.dtb;" \
-		"load mmc 0:1 ${kernel_addr_r} /boot/zImage;" \
+	"sdroot=echo Booting from the SD Card ...;" \
+		"load tssdcard 0:1 ${fdt_addr_r} /boot/armada-385-ts7800-v2.dtb;" \
+		"load tssdcard 0:1 ${kernel_addr_r} /boot/zImage;" \
 		"setenv bootargs root=/dev/tssdcarda1 rw rootwait ${cmdline_append};" \
 		"bootz ${kernel_addr_r} - ${fdt_addr_r};\0" \
 	"sataboot=echo Booting from SATA ...;" \

@@ -13,6 +13,7 @@
 #include <asm/arch/cpu.h>
 #include <asm/arch/soc.h>
 #include <watchdog.h>
+#include <tssdcard.h>
 
 #include "../drivers/ddr/mv-ddr-marvell/ddr3_init.h"
 #include <../serdes/a38x/high_speed_env_spec.h>
@@ -371,6 +372,10 @@ int board_late_init(void)
    }
 
    hw_watchdog_init();
+
+#if defined(CONFIG_MMC_TSSDCARD)
+   tssdcard_init(0, (unsigned char *)(syscon_base + 0x100));
+#endif
 
    return 0;
 }

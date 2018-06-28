@@ -141,6 +141,9 @@ void dev_print (struct blk_desc *dev_desc)
 	case IF_TYPE_DOC:
 		puts("device type DOC\n");
 		return;
+	case IF_TYPE_TSSDCARD:
+		puts("device type TSSDCARD\n");
+		break;
 	case IF_TYPE_UNKNOWN:
 		puts("device type unknown\n");
 		return;
@@ -268,6 +271,9 @@ static void print_part_header(const char *type, struct blk_desc *dev_desc)
 		break;
 	case IF_TYPE_NVME:
 		puts ("NVMe");
+		break;
+	case IF_TYPE_TSSDCARD:
+		puts ("TSSDCARD");
 		break;
 	default:
 		puts ("UNKNOWN");

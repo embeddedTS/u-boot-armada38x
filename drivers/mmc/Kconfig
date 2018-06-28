@@ -20,6 +20,11 @@ config DM_MMC
 	  appear as block devices in U-Boot and can support filesystems such
 	  as EXT4 and FAT.
 
+config MMC_TSSDCARD
+	bool "Technologic Systems TS SD core"
+	help
+	  Enable support for TS-7800-V2, TS-7820, TS-7840 SD controller
+
 config SPL_DM_MMC
 	bool "Enable MMC controllers using Driver Model in SPL"
 	depends on SPL_DM && DM_MMC
