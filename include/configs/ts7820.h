@@ -137,12 +137,38 @@
 
 /* Include the common distro boot environment */
 #ifndef CONFIG_SPL_BUILD
+#include <config_distro_defaults.h>
 
 #define KERNEL_ADDR_R	__stringify(0x800000)
 #define FDT_ADDR_R	__stringify(0x100000)
 #define RAMDISK_ADDR_R	__stringify(0x1800000)
 #define SCRIPT_ADDR_R	__stringify(0x200000)
 #define PXEFILE_ADDR_R	__stringify(0x300000)
+
+#ifdef CONFIG_MMC
+#define BOOT_TARGET_DEVICES_MMC(func) func(MMC, mmc, 0)
+#else
+#define BOOT_TARGET_DEVICES_MMC(func)
+#endif
+
+#ifdef CONFIG_USB_STORAGE
+#define BOOT_TARGET_DEVICES_USB(func) func(USB, usb, 0)
+#else
+#define BOOT_TARGET_DEVICES_USB(func)
+#endif
+
+#ifdef CONFIG_SCSI
+#define BOOT_TARGET_DEVICES_SCSI(func) func(SCSI, scsi, 0)
+#else
+#define BOOT_TARGET_DEVICES_SCSI(func)
+#endif
+
+#define BOOT_TARGET_DEVICES(func) \
+	BOOT_TARGET_DEVICES_USB(func) \
+	BOOT_TARGET_DEVICES_SCSI(func) \
+	BOOT_TARGET_DEVICES_MMC(func) \
+	func(DHCP, dhcp, na) \
+	func(PXE, pxe, na)
 
 #define LOAD_ADDRESS_ENV_SETTINGS \
 	"loadaddr=" KERNEL_ADDR_R "\0" \
@@ -161,62 +187,17 @@
 	"clearenv=sf probe 0; sf erase 100000 0x20000\0"
 #endif
 
-#undef CONFIG_PREBOOT
-#define CONFIG_PREBOOT \
-	"if test ${jp_uboot} = 'on'; then " \
-		"setenv bootdelay -1;" \
-		"run usbprod;" \
-	"else " \
-		"setenv bootdelay 0;" \
-	"fi"
-
 #define CONFIG_EXTRA_ENV_SETTINGS \
+	RELOCATION_LIMITS_ENV_SETTINGS \
 	LOAD_ADDRESS_ENV_SETTINGS \
-	"fdt_high=0x10000000\0"	\
-	"initrd_high=0x10000000\0" \
+	"fdtfile=" CONFIG_DEFAULT_DEVICE_TREE ".dtb\0" \
+	"console=ttyS0,115200\0" \
+	BOOTENV \
+	CLEARENV_SCRIPT \
 	"nfsroot=192.168.0.36:/mnt/storage/a38x\0" \
-	"autoload=no\0" \
+	"autoload=yes\0" \
 	"satadev=0\0" \
 	"ethact=ethernet@70000\0" \
-	"cmdline_append=console=ttyS0,115200\0" \
-	CLEARENV_SCRIPT \
-	"emmcboot=echo Booting from the eMMC ...;" \
-		"if load mmc 0:1 ${scriptaddr} /boot/boot.ub;" \
-			"then echo Booting from custom /boot/boot.ub;" \
-			"source ${scriptaddr};" \
-		"fi;" \
-		"load mmc 0:1 ${fdt_addr_r} /boot/armada-385-ts7820.dtb;" \
-		"load mmc 0:1 ${kernel_addr_r} /boot/zImage;" \
-		"setenv bootargs rootwait root=/dev/mmcblk0p1 ${cmdline_append};" \
-		"bootz ${kernel_addr_r} - ${fdt_addr_r};\0" \
-	"sdroot=echo Booting kernel/dtb from eMMC and rootfs from SD;" \
-		"load mmc 0:1 ${fdt_addr_r} /boot/armada-385-ts7820.dtb;" \
-		"load mmc 0:1 ${kernel_addr_r} /boot/zImage;" \
-		"setenv bootargs rootwait root=/dev/tssdcarda1 ${cmdline_append};" \
-		"bootz ${kernel_addr_r} - ${fdt_addr_r};\0" \
-	"sataboot=echo Booting from SATA ...;" \
-		"scsi scan;" \
-		"scsi dev ${satadev};" \
-		"part uuid scsi ${satadev}:1 partuuid;" \
-		"if load scsi ${satadev}:1 ${scriptaddr} /boot/boot.ub;" \
-			"then echo Booting from custom /boot/boot.ub;" \
-			"source ${scriptaddr};" \
-		"fi;" \
-		"load scsi ${satadev}:1 ${fdt_addr_r} /boot/armada-385-ts7820.dtb;" \
-		"load scsi ${satadev}:1 ${kernel_addr_r} /boot/zImage;" \
-		"setenv bootargs root=PARTUUID=${partuuid} rw rootwait ${cmdline_append};" \
-		"bootz ${kernel_addr_r} - ${fdt_addr_r};\0" \
-	"usbboot=echo Booting from USB ...;" \
-		"usb start;" \
-		"if load usb 0:1 ${scriptaddr} /boot/boot.ub;" \
-			"then echo Booting from custom /boot/boot.ub;" \
-			"source ${scriptaddr};" \
-		"fi;" \
-		"part uuid usb 0:1 partuuid;" \
-		"load usb 0:1 ${fdt_addr_r} /boot/armada-385-ts7800-v2.dtb;" \
-		"load usb 0:1 ${kernel_addr_r} /boot/zImage;" \
-		"setenv bootargs root=PARTUUID=${partuuid} rw rootwait ${cmdline_append};" \
-		"bootz ${kernel_addr_r} - ${fdt_addr_r};\0" \
 	"usbprod=usb start;" \
 		"if usb storage;" \
 			"then echo Checking USB storage for updates;" \
@@ -235,15 +216,9 @@
 			"${cmdline_append};" \
 		"bootz ${kernel_addr_r} - ${fdt_addr_r};\0"
 
-#define CONFIG_BOOTCOMMAND \
-	"if test ${jp_sdboot} = 'on';" \
-		"then run sdroot;" \
-		"else run emmcboot;" \
-	"fi;"
+#include <config_distro_bootcmd.h>
 
 /* Miscellaneous configurable options */
-#define CONFIG_SYS_LONGHELP
-#define CONFIG_AUTO_COMPLETE
 #define CONFIG_VERSION_VARIABLE
 #define CONFIG_SYS_CBSIZE	       1024
 
