@@ -54,6 +54,7 @@
 #define CONFIG_FAT_WRITE
 #define CONFIG_CMD_EXT4_WRITE
 #define CONFIG_CMD_FS_UUID
+#define CONFIG_SUPPORT_RAW_INITRD
 
 /* USB/EHCI configuration */
 #define CONFIG_EHCI_IS_TDI
