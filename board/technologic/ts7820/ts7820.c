@@ -5,6 +5,7 @@
  */
 
 #include <common.h>
+#include <dm.h>
 #include <i2c.h>
 #include <miiphy.h>
 #include <netdev.h>
@@ -44,10 +45,10 @@ static struct serdes_map board_serdes_map[] = {
 	{SGMII2, SERDES_SPEED_1_25_GBPS, SERDES_DEFAULT_MODE, 0, 0},
 };
 
-int get_board_model()
+int get_board_model(void)
 {
 	static int model = 0;
-	if(model != 0)
+	if(model == 0)
 	{
 		if(of_machine_is_compatible("technologic,a385-ts7840"))
 			model = 0x7840;
