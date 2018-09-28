@@ -141,6 +141,29 @@ void board_spi_cs_deactivate(int cs)
    }
 }
 
+void ts7800v2_mpcie_reset(void)
+{
+   uint32_t reg;
+
+   /* MPP44 (PE_RST) low */
+   reg = readl(MVEBU_GPIO1_BASE + 0x00);
+   reg &= ~0x1000;
+   writel(reg, MVEBU_GPIO1_BASE + 0x00);
+
+   /* MPP44 output enable */
+   reg = readl(MVEBU_GPIO1_BASE + 0x04);
+   reg &= ~0x1000; /* Active low */
+   writel(reg, MVEBU_GPIO1_BASE + 0x04);
+
+   /* Keep low for 1ms */
+   mdelay(1);
+
+   /* Drive high */
+   reg = readl(MVEBU_GPIO1_BASE + 0x00);
+   reg |= 0x1000;
+   writel(reg, MVEBU_GPIO1_BASE + 0x00);
+}
+
 int board_early_init_f(void)
 {
    /**
@@ -235,30 +258,6 @@ int board_early_init_f(void)
    /* Set GPP Out Enable */
    writel(BOARD_GPP_OUT_ENA_LOW, MVEBU_GPIO0_BASE + 0x04);
    writel(BOARD_GPP_OUT_ENA_MID, MVEBU_GPIO1_BASE + 0x04);
-
-#if (0)
-   writel(0x11111111, MVEBU_MPP_BASE + 0x00); /* 7:0 */
-   writel(0x11111111, MVEBU_MPP_BASE + 0x04); /* 15:8 */
-   writel(0x11120001, MVEBU_MPP_BASE + 0x08); /* 23:16 */
-   writel(0x22222211, MVEBU_MPP_BASE + 0x0c); /* 31:24 */
-   writel(0x22220000, MVEBU_MPP_BASE + 0x10); /* 39:32 */
-   writel(0x00000004, MVEBU_MPP_BASE + 0x14); /* 47:40 */
-   writel(0x55000500, MVEBU_MPP_BASE + 0x18); /* 55:48 */
-   writel(0x00005550, MVEBU_MPP_BASE + 0x1c); /* 63:56 */
-
-
-   /* Set GPP Out value */
-   writel(BOARD_GPP_OUT_VAL_LOW, MVEBU_GPIO0_BASE + 0x00);
-   writel(BOARD_GPP_OUT_VAL_MID, MVEBU_GPIO1_BASE + 0x00);
-
-   /* Set GPP Polarity */
-   writel(BOARD_GPP_POL_LOW, MVEBU_GPIO0_BASE + 0x0c);
-   writel(BOARD_GPP_POL_MID, MVEBU_GPIO1_BASE + 0x0c);
-
-   /* Set GPP Out Enable */
-   writel(BOARD_GPP_OUT_ENA_LOW, MVEBU_GPIO0_BASE + 0x04);
-   writel(BOARD_GPP_OUT_ENA_MID, MVEBU_GPIO1_BASE + 0x04);
-#endif
 
    return 0;
 }
@@ -376,6 +375,8 @@ int board_late_init(void)
 #if defined(CONFIG_MMC_TSSDCARD)
    tssdcard_init(0, (unsigned char *)(syscon_base + 0x100));
 #endif
+
+   ts7800v2_mpcie_reset();
 
    return 0;
 }
