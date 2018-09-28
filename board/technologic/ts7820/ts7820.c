@@ -5,6 +5,7 @@
  */
 
 #include <common.h>
+#include <dm.h>
 #include <i2c.h>
 #include <miiphy.h>
 #include <netdev.h>
@@ -33,11 +34,6 @@ DECLARE_GLOBAL_DATA_PTR;
 #define BOARD_GPP_POL_LOW	0x0
 #define BOARD_GPP_POL_MID	0x0
 
-#define BOOTFLAG_REG		1543
-#define BOOTFLAG_EN_WDOG	0x1
-#define BOOTFLAG_EN_ECC		0x40
-#define BOOTFLAG_EN_MPCIE	0x80
-
 void __iomem *syscon_base;
 
 static struct serdes_map board_serdes_map[] = {
@@ -48,6 +44,19 @@ static struct serdes_map board_serdes_map[] = {
 	{PEX2, SERDES_SPEED_5_GBPS, PEX_ROOT_COMPLEX_X1, 0, 0},
 	{SGMII2, SERDES_SPEED_1_25_GBPS, SERDES_DEFAULT_MODE, 0, 0},
 };
+
+int get_board_model(void)
+{
+	static int model = 0;
+	if(model == 0)
+	{
+		if(of_machine_is_compatible("technologic,a385-ts7840"))
+			model = 0x7840;
+		else if (of_machine_is_compatible("technologic,a385-ts7820"))
+			model = 0x7820;
+	}
+	return model;
+}
 
 int hws_board_topology_load(struct serdes_map **serdes_map_array, u8 *count)
 {
@@ -164,15 +173,26 @@ int board_late_init(void)
 	};
 
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
-	env_set("board_revision", "P1");
-	env_set("board_name", "TS-7820");
-	env_set("board_model", "7820");
+	switch(get_board_model()){
+	case 0x7820:
+		env_set("board_revision", "P1");
+		env_set("board_name", "TS-7820");
+		env_set("board_model", "7820");
+		break;
+	case 0x7840:
+		env_set("board_revision", "P2");
+		env_set("board_name", "TS-7840");
+		env_set("board_model", "7840");
+		break;
+	default:
+		puts("Unknown board\n");
+	}
 #endif
 
 	dev = pci_find_devices(ids, 0);
 	if(!dev){
 		printf("Error: Can't find FPGA!\n");
-		return 1;		
+		return 1;
 	}
 
 	if (pci_read_config_dword(dev, PCI_BASE_ADDRESS_2, &p) || p == 0)
