@@ -352,19 +352,20 @@ int board_late_init(void)
    if(ret) {
       printf("Failed to probe silabs at 0x54\n");
    } else {
-      uint8_t mac[6];
-      i2c_read(0x54, 1536, 2, (uint8_t *)&mac, 6);
+      uint8_t tmp[6];
+      uchar enetaddr[6];
 
-      if (!is_valid_ethaddr(mac))      {
+      i2c_read(0x54, 1536, 2, (uint8_t *)&tmp, 6);
+      enetaddr[5] = tmp[0];
+      enetaddr[4] = tmp[1];
+      enetaddr[3] = tmp[2];
+      enetaddr[2] = tmp[3];
+      enetaddr[1] = tmp[4];
+      enetaddr[0] = tmp[5];
+
+      if (!is_valid_ethaddr(enetaddr))      {
          printf("No MAC programmed to board\n");
       } else {
-         uchar enetaddr[6];
-         enetaddr[5] = mac[0];
-         enetaddr[4] = mac[1];
-         enetaddr[3] = mac[2];
-         enetaddr[2] = mac[3];
-         enetaddr[1] = mac[4];
-         enetaddr[0] = mac[5];
 
          eth_env_set_enetaddr("ethaddr", enetaddr);
       }
