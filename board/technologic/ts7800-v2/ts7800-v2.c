@@ -379,6 +379,8 @@ int board_late_init(void)
 
    ts7800v2_mpcie_reset();
 
+   __led_set(CONFIG_LED_STATUS_BIT1, CONFIG_LED_STATUS_ON);
+
    return 0;
 }
 
