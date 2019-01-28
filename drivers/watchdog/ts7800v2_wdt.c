@@ -18,6 +18,8 @@ static int refcnt = 0;
 static int wdtinit = 0;
 static ulong lastfeed;
 
+extern uint8_t get_bootflags(void);
+
 void reset_misc(void)
 {
 	/* timeout 0 == watchdog off.  1 is 10ms,
@@ -56,9 +58,12 @@ void hw_watchdog_init(void)
 	uint32_t timeout = CONFIG_WATCHDOG_TIMEOUT_MSECS / 10;
 	i2c_set_bus_num(0);
 
-	i2c_write(0x54, 1024, 2, (uint8_t *)&timeout, 4);
-	wdtinit = 1;
-	lastfeed = get_timer(0);
+	/* If watchdog is not enabled in boot flags, do not feed watchdog */
+	if(get_bootflags() & 0x1){
+		i2c_write(0x54, 1024, 2, (uint8_t *)&timeout, 4);
+		wdtinit = 1;
+		lastfeed = get_timer(0);
+	}
 }
 
 #else
