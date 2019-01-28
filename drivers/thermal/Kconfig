@@ -8,6 +8,12 @@ config DM_THERMAL
 
 if DM_THERMAL
 
+config A38X_THERMAL
+	bool "Temperature sensor driver for Marvell Armada 38X series SoCs"
+	depends on ARMADA_38X
+	help
+	  Support for Temperature Sensor on Armada 380/385/388 CPUs
+
 config IMX_THERMAL
 	bool "Temperature sensor driver for Freescale i.MX SoCs"
 	depends on MX6 || MX7

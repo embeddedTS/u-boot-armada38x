@@ -12,6 +12,8 @@
 #include <asm/arch/cpu.h>
 #include <asm/arch/soc.h>
 #include <sdhci.h>
+#include <thermal.h>
+#include <dm.h>
 
 #define DDR_BASE_CS_OFF(n)	(0x0000 + ((n) << 3))
 #define DDR_SIZE_CS_OFF(n)	(0x0004 + ((n) << 3))
@@ -179,6 +181,9 @@ void get_sar_freq(struct sar_freq_modes *sar_freq)
 	*sar_freq = sar_freq_tab[i - 1];
 }
 
+extern int a38x_thermal_probe(struct udevice *dev);
+extern int a38x_thermal_get_temp(struct udevice *dev, int *temp);
+
 int print_cpuinfo(void)
 {
 	u16 devid = (readl(MVEBU_REG_PCIE_DEVID) >> 16) & 0xffff;
@@ -255,6 +260,14 @@ int print_cpuinfo(void)
 
 	get_sar_freq(&sar_freq);
 	printf(" at %d MHz\n", sar_freq.p_clk);
+
+#if defined(CONFIG_A38X_THERMAL)
+	int cpu_tmp;
+	a38x_thermal_probe(NULL);
+	a38x_thermal_get_temp(NULL, &cpu_tmp);
+	printf("Temp:  %d\n", cpu_tmp);
+
+#endif
 
 	return 0;
 }

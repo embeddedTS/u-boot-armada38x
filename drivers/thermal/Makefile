@@ -7,3 +7,4 @@
 
 obj-$(CONFIG_DM_THERMAL) += thermal-uclass.o
 obj-$(CONFIG_IMX_THERMAL) += imx_thermal.o
+obj-$(CONFIG_A38X_THERMAL) += a38x_thermal.o
