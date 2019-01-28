@@ -35,11 +35,53 @@ void leds_test(void)
 			  CONFIG_LED_STATUS_ON);
 }
 
+/* Check for M41T00S */
+int m41t00s_rtc_test(void)
+{
+        int ret;
+
+        ret = i2c_probe(0x68);
+
+        if (ret == 0) printf("RTC test passed\n");
+        else printf("RTC test failed\n");
+        return ret;
+}
+
+int marvell_phy_test(void)
+{
+	int ret = 0;
+	unsigned int oui;
+	unsigned char model;
+	unsigned char rev;
+
+	if (miiphy_info ("ethernet@70000", 0x1, &oui, &model, &rev) != 0) {
+		printf("Failed to find PHY\n");
+		return 1;
+	}
+
+	if(oui != 0x5043) {
+		printf("Wrong PHY?  Bad OUI 0x%X 0x5043\n", oui);
+		ret |= 1;
+	}
+
+	if(model != 0x1d) {
+		printf("Wrong PHY?  Bad model 0x%X not 0x1d\n", oui);
+		ret |= 1;
+	}
+
+	if (ret == 0) printf("PHY test passed\n");
+	else printf("PHY test failed\n");
+	return ret;
+}
+
 /* Placeholder for now */
-static int do_post_test(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+int do_post_test(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	int ret = 0;
 	leds_test();
+
+	ret |= m41t00s_rtc_test();
+	ret |= marvell_phy_test();
 
 	if (ret == 0) printf("All POST tests passed\n");
 	else printf("One or more POST tests failed\n");
