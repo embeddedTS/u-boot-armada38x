@@ -80,7 +80,7 @@ static int do_cpu_temp(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]
 	a38x_thermal_get_temp(NULL, &cpu_temp);
 	printf("%d\n", cpu_temp);
 	env_set_ulong("cputemp", cpu_temp);
-
+	return 0;
 }
 
 U_BOOT_CMD(cputemp, 1, 1,	do_cpu_temp,
