@@ -34,6 +34,9 @@ DECLARE_GLOBAL_DATA_PTR;
 #define BOARD_GPP_POL_LOW	0x0
 #define BOARD_GPP_POL_MID	0x0
 
+#define BOOTFLAG_REG		1543
+#define BOOTFLAG_EN_WDOG	0x1
+
 void __iomem *syscon_base;
 
 static struct serdes_map board_serdes_map[] = {
@@ -90,6 +93,17 @@ struct mv_ddr_topology_map *mv_ddr_topology_map_get(void)
 {
 	/* Return the board topology as defined in the board code */
 	return &ts7820_ecc_topology_map;
+}
+
+uint8_t get_bootflags(void)
+{
+   static uint8_t runonce = 0;
+   static uint8_t bootflags = 0;
+   if(runonce != 1) {
+      i2c_read(0x54, BOOTFLAG_REG, 2, &bootflags, 1);
+      runonce = 1;
+   }
+   return bootflags;
 }
 
 void board_spi_cs_activate(int cs)
@@ -202,6 +216,9 @@ int board_late_init(void)
 
 	printf("FPGA Revision: %d\n", readl(syscon_base + 0x4) & 0xffff);
 
+	/* When CLK_125MHz OE is low, drives high */
+	fpga_dio_oe_clr(0, (1 << 3));
+
 	/* Enable PHY */
 	fpga_dio_dat_clr(0, (1 << 18));
 	fpga_dio_oe_set(0, (1 << 18));
@@ -209,6 +226,11 @@ int board_late_init(void)
 	/* 88E1512 requires 10ms minimum */
 	udelay(10*1000);
 	fpga_dio_dat_set(0, (1 << 18));
+
+	/* 88E1512 requires time to strap phy addr */
+	udelay(1000);
+	/* Enable switch 125MHz clock */
+	fpga_dio_oe_set(0, (1 << 3));
 
 	ret = i2c_probe(0x54);
 	if(ret) { 
