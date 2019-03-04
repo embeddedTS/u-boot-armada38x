@@ -102,12 +102,6 @@ else
 MV_DDR_ROOT = .
 endif
 
-# set mv_ddr build message and version string source file
-MV_DDR_VER_CSRC = mv_ddr_build_message.c
-
-# create mv_ddr build message and version string source file
-$(shell $(MV_DDR_ROOT)/scripts/localversion.sh $(MV_DDR_ROOT) $(MV_DDR_VER_CSRC) 2> /dev/null)
-
 # ******************
 # U-BOOT SPL SUPPORT
 # ******************
@@ -185,9 +179,6 @@ MV_DDR_LIB = $(OBJ_DIR)/$(MV_DDR_LIBNAME)
 
 MV_DDR_CSRC = $(foreach DIR,$(MV_DDR_SRCPATH),$(wildcard $(DIR)/*.c))
 MV_DDR_COBJ = $(patsubst %.c,$(OBJ_DIR)/%.o,$(MV_DDR_CSRC))
-# add mv_ddr build message and version string object
-MV_DDR_VER_COBJ = $(patsubst %.c,$(OBJ_DIR)/%.o,$(MV_DDR_VER_CSRC))
-MV_DDR_COBJ += $(MV_DDR_VER_COBJ)
 
 .SILENT:
 all: header create_dir $(MV_DDR_LIB)
@@ -200,10 +191,6 @@ $(OBJ_DIR)/%.o: %.c
 $(MV_DDR_LIB): $(MV_DDR_COBJ)
 	$(ECHO) "  AR      $(MV_DDR_LIBNAME)"
 	$(AR) rcs $(MV_DDR_LIB) $(MV_DDR_COBJ)
-
-$(MV_DDR_VER_COBJ):
-	$(ECHO) "  CC      $(MV_DDR_VER_CSRC)"
-	$(CC) -c $(CFLAGS) -o $@ $(MV_DDR_VER_CSRC)
 
 create_dir:
 	$(MKDIR) $(OBJ_DIR)/a38x
@@ -287,9 +274,6 @@ MV_DDR_CSRC = $(foreach DIR,$(MV_DDR_SRCPATH),$(wildcard $(DIR)/*.c))
 MV_DDR_CSRC += $(MV_DDR_DRVPATH)/mv_ddr_mc6.c
 
 MV_DDR_COBJ = $(patsubst %.c,$(OBJ_DIR)/%.o,$(MV_DDR_CSRC))
-# add mv_ddr build message and version string object
-MV_DDR_VER_COBJ = $(patsubst %.c,$(OBJ_DIR)/%.o,$(MV_DDR_VER_CSRC))
-MV_DDR_COBJ += $(MV_DDR_VER_COBJ)
 
 .SILENT:
 
@@ -303,10 +287,6 @@ $(OBJ_DIR)/%.o: %.c
 $(MV_DDR_LIB): $(MV_DDR_COBJ)
 	$(ECHO) "  AR      $(MV_DDR_LIBNAME)"
 	$(AR) rcs $(MV_DDR_LIB) $(MV_DDR_COBJ)
-
-$(MV_DDR_VER_COBJ):
-	$(ECHO) "  CC      $(MV_DDR_VER_CSRC)"
-	$(CC) -c $(CFLAGS) -o $@ $(MV_DDR_VER_CSRC)
 
 create_dir:
 	$(MKDIR) $(OBJ_DIR)/drivers
