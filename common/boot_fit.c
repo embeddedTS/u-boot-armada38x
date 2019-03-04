@@ -11,7 +11,7 @@
 #include <common.h>
 #include <errno.h>
 #include <image.h>
-#include <libfdt.h>
+#include <linux/libfdt.h>
 
 int fdt_offset(void *fit)
 {

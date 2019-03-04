@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <u-boot/crc.h>
+#include <stdbool.h>
 
 #define ARP_HLEN 6 /* Length of hardware address */
 #define ARP_HLEN_ASCII (ARP_HLEN * 2) + (ARP_HLEN - 1) /* with separators */

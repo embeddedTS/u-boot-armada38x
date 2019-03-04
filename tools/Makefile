@@ -58,11 +58,13 @@ mkenvimage-objs := mkenvimage.o os_support.o lib/crc32.o
 hostprogs-y += dumpimage mkimage
 hostprogs-$(CONFIG_FIT_SIGNATURE) += fit_info fit_check_sign
 
-FIT_SIG_OBJS-$(CONFIG_FIT_SIGNATURE) := common/image-sig.o
-# Flattened device tree objects
-LIBFDT_CSRCS := fdt.c fdt_ro.c fdt_wip.c fdt_sw.c fdt_rw.c fdt_strerror.c  \
-			fdt_empty_tree.c fdt_addresses.c fdt_overlay.c \
-			fdt_region.c
+# The following files are synced with upstream DTC.
+# Use synced versions from scripts/dtc/libfdt/.
+LIBFDT_SRCS_SYNCED := fdt.c fdt_wip.c fdt_sw.c fdt_rw.c \
+		fdt_strerror.c fdt_empty_tree.c fdt_addresses.c fdt_overlay.c
+# The following files are locally modified for U-Boot (unfotunately).
+# Use U-Boot own versions from lib/libfdt/.
+LIBFDT_SRCS_UNSYNCED := fdt_ro.c fdt_region.c
 
 # Unfortunately setup.py below cannot handle srctree being ".." which it often
 # is. It fails with an error like:
@@ -71,9 +73,8 @@ LIBFDT_CSRCS := fdt.c fdt_ro.c fdt_wip.c fdt_sw.c fdt_rw.c fdt_strerror.c  \
 # To fix this, use an absolute path.
 libfdt_tree := $(shell readlink -f $(srctree)/lib/libfdt)
 
-LIBFDT_SRCS := $(addprefix $(libfdt_tree)/, $(LIBFDT_CSRCS))
-LIBFDT_SWIG := $(addprefix $(libfdt_tree)/, pylibfdt/libfdt.i)
-LIBFDT_OBJS := $(addprefix lib/libfdt/, $(patsubst %.c, %.o, $(LIBFDT_CSRCS)))
+LIBFDT_OBJS := $(addprefix libfdt/, $(patsubst %.c, %.o, $(LIBFDT_SRCS_SYNCED))) \
+	       $(addprefix lib/libfdt/, $(patsubst %.c, %.o, $(LIBFDT_SRCS_UNSYNCED)))
 
 RSA_OBJS-$(CONFIG_FIT_SIGNATURE) := $(addprefix lib/rsa/, \
 					rsa-sign.o rsa-verify.o rsa-checksum.o \
@@ -264,7 +265,7 @@ endif # !LOGO_BMP
 # Define __KERNEL_STRICT_NAMES to prevent typedef overlaps
 # Define _GNU_SOURCE to obtain the getline prototype from stdio.h
 #
-HOST_EXTRACFLAGS += -include $(srctree)/include/libfdt_env.h \
+HOST_EXTRACFLAGS += -include $(srctree)/include/compiler.h \
 		$(patsubst -I%,-idirafter%, $(filter -I%, $(UBOOTINCLUDE))) \
 		-I$(srctree)/scripts/dtc/libfdt \
 		-I$(srctree)/tools \

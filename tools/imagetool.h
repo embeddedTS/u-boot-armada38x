@@ -20,6 +20,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <u-boot/sha1.h>
+#include <stdbool.h>
 
 #include "fdt_host.h"
 

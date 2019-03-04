@@ -10,7 +10,7 @@
 #include <dm.h>
 #include <dt-structs.h>
 #include <fdtdec.h>
-#include <libfdt.h>
+#include <linux/libfdt.h>
 #include <malloc.h>
 #include <mapmem.h>
 #include <sdhci.h>
