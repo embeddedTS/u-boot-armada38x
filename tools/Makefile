@@ -216,10 +216,6 @@ clean-dirs := lib common
 
 always := $(hostprogs-y)
 
-# Build a libfdt Python module if swig is available
-# Use 'sudo apt-get install swig libpython-dev' to enable this
-always += $(if $(shell which swig 2> /dev/null),_libfdt.so)
-
 # Generated LCD/video logo
 LOGO_H = $(objtree)/include/bmp_logo.h
 LOGO_DATA_H = $(objtree)/include/bmp_logo_data.h
