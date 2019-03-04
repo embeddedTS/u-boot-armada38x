@@ -125,23 +125,6 @@ mkimage-objs   := $(dumpimage-mkimage-objs) mkimage.o
 fit_info-objs   := $(dumpimage-mkimage-objs) fit_info.o
 fit_check_sign-objs   := $(dumpimage-mkimage-objs) fit_check_sign.o
 
-# Unfortunately setup.py (or actually the Python distutil implementation)
-# puts files into the same directory as the .i file. We cannot touch the source
-# directory, so we copy the .i file into the tools/ build subdirectory before
-# calling setup. This directory is safe to write to. This ensures that we get
-# all three files in $(obj)/tools: _libfdt.so, libfdt.py and libfdt_wrap.c
-# The latter is a temporary file which we could actually remove.
-tools/_libfdt.so: $(LIBFDT_SRCS) $(LIBFDT_SWIG)
-	$(Q)cp $(LIBFDT_SWIG) tools/.
-	$(Q)unset CC; \
-	unset CROSS_COMPILE; \
-	LDFLAGS="$(HOSTLDFLAGS)" CFLAGS= VERSION="u-boot-$(UBOOTVERSION)" \
-		CPPFLAGS="$(_hostc_flags)" OBJDIR=tools \
-		SOURCES="$(LIBFDT_SRCS) tools/libfdt.i" \
-		SWIG_OPTS="-I$(srctree)/lib/libfdt -I$(srctree)/lib" \
-		$(PYTHON) $(libfdt_tree)/pylibfdt/setup.py --quiet build_ext \
-			--build-lib tools
-
 ifneq ($(CONFIG_MX23)$(CONFIG_MX28),)
 # Add CONFIG_MXS into host CFLAGS, so we can check whether or not register
 # the mxsimage support within tools/mxsimage.c .
