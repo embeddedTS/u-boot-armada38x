@@ -367,7 +367,7 @@ int board_late_init(void)
          printf("No MAC programmed to board\n");
       } else {
 
-         eth_env_set_enetaddr("ethaddr", enetaddr);
+         eth_env_set_enetaddr("eth1addr", enetaddr);
       }
    }
 
