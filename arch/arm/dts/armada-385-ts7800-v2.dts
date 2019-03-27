@@ -48,7 +48,7 @@
 	compatible = "technologic,a385-ts7800-v2", "marvell,armada385", "marvell,armada380";
 
 	aliases {
-		ethernet3 = &eth2;
+		ethernet1 = &eth0;
 		spi0 = &spi0;
 	};
 
