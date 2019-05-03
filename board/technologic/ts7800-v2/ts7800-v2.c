@@ -345,7 +345,8 @@ int board_late_init(void)
 #ifndef CONFIG_ENV_IS_IN_SPI_FLASH
    /* Routes CPU pins to FPGA SPI flash.  Happens on normal boots
     * but not when using the SPI daughter card */
-   fpga_poke32(0x8, 0xBFFFFFFF);
+   syscon_reg = fpga_peek32(0x8);
+   fpga_poke32(0x8, syscon_reg | (1 <<31));
 #endif
 
    ret = i2c_probe(0x54);
