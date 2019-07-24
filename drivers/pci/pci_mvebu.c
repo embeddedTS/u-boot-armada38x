@@ -338,6 +338,7 @@ void pci_init_board(void)
 	int bus = 0;
 	u32 reg;
 	u32 soc_ctrl = readl(MVEBU_SYSTEM_REG_BASE + 0x4);
+	mvebu_pcie_membase = (void __iomem *)MBUS_PCI_MEM_BASE;
 
 	/* Check SoC Control Power State */
 	debug("%s: SoC Control %08x, 0en %01lx, 1en %01lx, 2en %01lx\n",
@@ -381,6 +382,9 @@ void pci_init_board(void)
 		pcie->mem.start = (u32)mvebu_pcie_membase;
 		pcie->mem.end = pcie->mem.start + PCIE_MEM_SIZE - 1;
 		mvebu_pcie_membase += PCIE_MEM_SIZE;
+
+		/* Delete any existing windows in case we are re-enumerating the bus */
+		mvebu_mbus_del_window((phys_addr_t)pcie->mem.start, PCIE_MEM_SIZE);
 
 		if (mvebu_mbus_add_window_by_id(mem_target, mem_attr,
 						(phys_addr_t)pcie->mem.start,
