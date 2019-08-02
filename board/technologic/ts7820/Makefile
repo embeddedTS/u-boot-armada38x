@@ -4,5 +4,5 @@
 # SPDX-License-Identifier:	GPL-2.0+
 #
 
-obj-y	:= ts7820.o post.o
+obj-y	:= ts7820.o post.o asmi.o
 obj-$(CONFIG_LED_STATUS) += led.o
