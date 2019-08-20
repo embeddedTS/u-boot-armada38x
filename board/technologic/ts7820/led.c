@@ -12,9 +12,9 @@
 
 #include "tsfpga.h"
 
-#define TS78XX_LED_RED	(1 << 4)
-#define TS78XX_LED_GRN	(1 << 5)
-#define TS78XX_LED_BLU	(1 << 17)
+#define TS78XX_LED_GRN	(1 << 26)
+#define TS78XX_LED_RED	(1 << 27)
+#define TS78XX_LED_BLU	(1 << 28)
 
 void __led_init(led_id_t mask, int state)
 {
