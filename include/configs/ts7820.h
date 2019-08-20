@@ -12,6 +12,7 @@
  */
 #define CONFIG_DISPLAY_BOARDINFO_LATE
 #define CONFIG_BOARD_LATE_INIT
+#define CONFIG_MISC_INIT_R
 
 /*
  * TEXT_BASE needs to be below 16MiB, since this area is scrubbed
@@ -66,15 +67,17 @@
 /* PCIe support */
 #ifndef CONFIG_SPL_BUILD
 #define CONFIG_PCI_MVEBU
-#define CONFIG_PCI_SCAN_SHOW
+#undef CONFIG_PCI_SCAN_SHOW
 #endif
+
+#define CONFIG_BOOTCOUNT_LIMIT
 
 /* SATA support */
 #ifdef CONFIG_SCSI
 #define CONFIG_LIBATA
 #define CONFIG_SCSI_AHCI
 #define CONFIG_SCSI_AHCI_PLAT
-#define CONFIG_SYS_SCSI_MAX_SCSI_ID	2
+#define CONFIG_SYS_SCSI_MAX_SCSI_ID	1
 #define CONFIG_SYS_SCSI_MAX_LUN		1
 #define CONFIG_SYS_SCSI_MAX_DEVICE	(CONFIG_SYS_SCSI_MAX_SCSI_ID * \
 					CONFIG_SYS_SCSI_MAX_LUN)
@@ -187,6 +190,10 @@
 	"clearenv=sf probe 0; sf erase 100000 0x20000\0"
 #endif
 
+#define CONFIG_BOOTCOMMAND \
+	"tsfpga;" \
+	"run distro_bootcmd;"
+
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	RELOCATION_LIMITS_ENV_SETTINGS \
 	LOAD_ADDRESS_ENV_SETTINGS \
@@ -198,6 +205,10 @@
 	"autoload=yes\0" \
 	"satadev=0\0" \
 	"ethact=ethernet@70000\0" \
+	"bootcmd_scsi0=setenv devnum 0;" \
+		"if test ssd_present = 1; then " \
+			"run scsi_boot;" \
+		"fi;\0" \
 	"usbprod=usb start;" \
 		"if usb storage;" \
 			"then echo Checking USB storage for updates;" \
@@ -210,7 +221,7 @@
 		"fi;\0" \
 	"nfsboot=echo Booting from NFS ...;" \
 		"dhcp;" \
-		"nfs ${fdt_addr_r} ${nfsroot}/boot/armada-385-ts7820.dtb;" \
+		"nfs ${fdt_addr_r} ${nfsroot}/boot/" CONFIG_DEFAULT_DEVICE_TREE ".dtb;" \
 		"nfs ${kernel_addr_r} ${nfsroot}/boot/zImage;" \
 		"setenv bootargs root=/dev/nfs rw ip=dhcp nfsroot=${nfsroot} " \
 			"${cmdline_append};" \
