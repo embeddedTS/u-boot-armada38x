@@ -63,6 +63,13 @@ void hw_watchdog_init(void)
 		i2c_write(0x54, 1024, 2, (uint8_t *)&timeout, 4);
 		wdtinit = 1;
 		lastfeed = get_timer(0);
+	} else {
+		/* If the silabs has been kept alive from a previous boot where
+		 * linux fed the watchdog, the watchdog will be active and
+		 * expect to be fed.  Just in case, we disable the watchdog
+		 * if the bootflag is not set */
+		timeout = 0;
+		i2c_write(0x54, 1024, 2, (uint8_t *)&timeout, 4);
 	}
 }
 
