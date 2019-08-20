@@ -206,7 +206,7 @@
 	"satadev=0\0" \
 	"ethact=ethernet@70000\0" \
 	"bootcmd_scsi0=setenv devnum 0;" \
-		"if test ssd_present = 1; then " \
+		"if test $ssd_present = 1; then " \
 			"run scsi_boot;" \
 		"fi;\0" \
 	"usbprod=usb start;" \
