@@ -192,6 +192,9 @@
 
 #define CONFIG_BOOTCOMMAND \
 	"tsfpga;" \
+	"if silabs scaps; then " \
+		"scaps wait full;" \
+	"fi;" \
 	"run distro_bootcmd;"
 
 #define CONFIG_EXTRA_ENV_SETTINGS \
