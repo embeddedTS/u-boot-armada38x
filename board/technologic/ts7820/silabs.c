@@ -4,7 +4,7 @@
 #define MAX_CHARGE_MV 4800
 #define DEFAULT_WDOG_MS 60000
 
-int silab_cmd(int argc, char *const argv[]); /* One public func API */
+long long silab_cmd(int argc, char *const argv[]);
 
 /* clang-format off */
 #define SILAB_HELP                                                                 \
@@ -343,7 +343,6 @@ int main(int argc, char **argv) {
 
 #else /* Use external porting layer hooks in silabs-port.c */
 #include <assert.h>
-#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 static int wait_hook(int pct); /* pct == -1 for end */
@@ -769,7 +768,7 @@ static void silab_status_ts7100(void) {
 
 static void silab_status_ts7840(void) {
   int i, r;
-  uint8_t buf[27];
+  uint8_t buf[34];
   uint8_t build[80];
   uint16_t *sbuf = (uint16_t *)buf;
   uint8_t wdog[4];
@@ -788,7 +787,7 @@ static void silab_status_ts7840(void) {
   r = silab_read(4096, build, sizeof(build));
   assert(r == 0);
 
-  r = silab_read(0, buf, 27);
+  r = silab_read(0, buf, 34);
   assert(r == 0);
   silab_read(1024, wdog, 4);
   w = wdog[0];
@@ -827,6 +826,8 @@ static void silab_status_ts7840(void) {
          (silab_inb(1028) & (1 << 7)) ? "" : "NOT ");
   printf("\nUSB console:\t%s\n",
          (buf[22] & 0x10) ? "connected" : "disconnected");
+  printf("Silabs MAC:\t%02x:%02x:%02x:%02x:%02x:%02x\n",
+         buf[28], buf[29], buf[30], buf[31], buf[32], buf[33]);
 }
 
 static void silab_status_ts7250v3(void) {
@@ -890,11 +891,42 @@ static int my_atoi(char *s) { /* Because uboot doesnt have atoi() */
   return ret;
 }
 
-int silab_cmd(int argc, char *const argv[]) {
+static uint64_t my_hex_to_uint64(const char *mac) {
+  uint64_t r = 0;
+  uint8_t c;
+  printf("Mac is %s\n", mac);
+  while ((c = *mac++)) {
+    if (c == ':') continue;
+    r = (r << 4);
+    if (c >= 'A' && c <= 'F') r |= 10 + (c - 'A');
+    else if (c >= 'a' && c <= 'f') r |= 10 + (c - 'a');
+    else r |= c - '0';
+  }
+  return r;
+}
+
+static int64_t silab_mac(int64_t x) { /* x == -1: return current mac only, do not set */
+  int64_t ret = 0;
+  int i;
+  uint8_t buf[6];
+  if (!silab_board_is("7840")) return -1;
+  else if (x >= 0) {
+    for (i = 5; i >= 0; i--, x >>= 8) buf[i] = x & 0xff;
+    return silab_write(28, buf, 6);
+  } else {
+    silab_read(28, buf, 6);
+    for (i = 0; i < 6; i++) ret = (ret << 8) | buf[i];
+    return ret;
+  }
+}
+
+long long silab_cmd(int argc, char *const argv[]) {
 
   if (argc == 1) {
     printf("Usage: %s [CMD] ...\n", argv[0]);
     puts(silab_help);
+  } else if (strcmp("mac", argv[1]) == 0) { /* Hidden cmd for production and internal uboot */
+    return silab_mac(argc == 2 ? -1 : my_hex_to_uint64(argv[2]));
   } else if (strcmp("fan", argv[1]) == 0) {
     if (argc == 3 && strcmp("disable", argv[2]) == 0)
       silab_fan_en(0);
