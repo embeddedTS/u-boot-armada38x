@@ -224,7 +224,6 @@ int board_late_init(void)
 #endif
 
 	mac = silab_cmd(2, cmd);
-	printf("Mac ret: 0x%llx\n", mac);
 	memcpy(enetaddr, &mac, 6);
 
 	if (!is_valid_ethaddr(enetaddr)) {
