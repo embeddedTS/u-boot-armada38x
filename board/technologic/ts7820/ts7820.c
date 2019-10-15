@@ -20,6 +20,8 @@
 
 #include "tsfpga.h"
 
+extern int64_t silab_cmd(int argc, char *const argv[]);
+
 DECLARE_GLOBAL_DATA_PTR;
 
 #define ETH_PHY_CTRL_REG		0
@@ -200,9 +202,9 @@ void inc_mac(uchar *enetaddr)
 
 int board_late_init(void)
 {
-	int ret;
-	u8 tmp[6];
+	uint64_t mac;
 	uchar enetaddr[6];
+	char * const cmd[] = {"silabs", "mac"};
 
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 	switch (get_board_model()) {
@@ -221,18 +223,9 @@ int board_late_init(void)
 	}
 #endif
 
-	ret = i2c_probe(0x54);
-	if (ret) {
-		printf("Failed to probe silabs at 0x54\n");
-		return 1;
-	}
-	i2c_read(0x54, 1536, 2, (u8 *)&tmp, 6);
-	enetaddr[5] = tmp[0];
-	enetaddr[4] = tmp[1];
-	enetaddr[3] = tmp[2];
-	enetaddr[2] = tmp[3];
-	enetaddr[1] = tmp[4];
-	enetaddr[0] = tmp[5];
+	mac = silab_cmd(2, cmd);
+	printf("Mac ret: 0x%llx\n", mac);
+	memcpy(enetaddr, &mac, 6);
 
 	if (!is_valid_ethaddr(enetaddr)) {
 		printf("No MAC programmed to board\n");
