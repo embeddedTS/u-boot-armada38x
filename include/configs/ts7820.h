@@ -7,6 +7,9 @@
 #ifndef _CONFIG_TS7820_H
 #define _CONFIG_TS7820_H
 
+#undef CONFIG_SYS_BOARD
+#define CONFIG_SYS_BOARD ""
+
 /*
  * High Level Configuration Options (easy to change)
  */
