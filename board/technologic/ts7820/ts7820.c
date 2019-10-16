@@ -214,7 +214,7 @@ int board_late_init(void)
 		env_set("board_model", "7820");
 		break;
 	case 0x7840:
-		env_set("board_revision", "P2");
+		env_set("board_revision", "P3");
 		env_set("board_name", "TS-7840");
 		env_set("board_model", "7840");
 		break;
