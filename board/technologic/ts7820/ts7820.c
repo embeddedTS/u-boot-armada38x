@@ -203,7 +203,7 @@ void inc_mac(uchar *enetaddr)
 int board_late_init(void)
 {
 	uint64_t mac;
-	uchar enetaddr[6];
+	uchar enetaddr[6], tmp[6];
 	char * const cmd[] = {"silabs", "mac"};
 
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
@@ -224,7 +224,14 @@ int board_late_init(void)
 #endif
 
 	mac = silab_cmd(2, cmd);
-	memcpy(enetaddr, &mac, 6);
+	memcpy(tmp, &mac, 6);
+
+	enetaddr[5] = tmp[0];
+	enetaddr[4] = tmp[1];
+	enetaddr[3] = tmp[2];
+	enetaddr[2] = tmp[3];
+	enetaddr[1] = tmp[4];
+	enetaddr[0] = tmp[5];
 
 	if (!is_valid_ethaddr(enetaddr)) {
 		printf("No MAC programmed to board\n");
