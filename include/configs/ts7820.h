@@ -185,14 +185,6 @@
 	"scriptaddr=" SCRIPT_ADDR_R "\0" \
 	"pxefile_addr_r=" PXEFILE_ADDR_R "\0"
 
-#ifdef CONFIG_ENV_IS_IN_MMC
-#define CLEARENV_SCRIPT \
-	"clearenv=mmc dev 0 1; mmc erase 2000 2000; mmc erase 3000 2000;\0"
-#else
-#define CLEARENV_SCRIPT \
-	"clearenv=sf probe 0; sf erase 100000 0x20000\0"
-#endif
-
 #define CONFIG_BOOTCOMMAND \
 	"tsfpga;" \
 	"if silabs scaps; then " \
@@ -206,7 +198,7 @@
 	"fdtfile=" CONFIG_DEFAULT_DEVICE_TREE ".dtb\0" \
 	"console=ttyS0,115200\0" \
 	BOOTENV \
-	CLEARENV_SCRIPT \
+	"clearenv=env default -f -a; env save;\0" \
 	"nfsroot=192.168.0.36:/mnt/storage/a38x\0" \
 	"autoload=yes\0" \
 	"satadev=0\0" \
