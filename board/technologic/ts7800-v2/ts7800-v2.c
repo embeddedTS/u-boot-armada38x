@@ -50,6 +50,22 @@ static struct serdes_map board_serdes_map[] = {
 
 volatile unsigned char *syscon_base;
 
+int board_network_enable(struct mii_dev *bus)
+{
+        /* set reg page 0 */
+        bus->write(bus, 1, MDIO_DEVAD_NONE, 22, 0x0000);
+        /* Enable downshift after 1 try */
+        bus->write(bus, 1, MDIO_DEVAD_NONE, 16, 0X1860);
+        /* set reg page 3 */
+        bus->write(bus, 1, MDIO_DEVAD_NONE, 22, 0x0003);
+        /* Change LED */
+        bus->write(bus, 1, MDIO_DEVAD_NONE, 16, 0X1017);
+        /* Reset reg to page 0 */
+        bus->write(bus, 1, MDIO_DEVAD_NONE, 22, 0x0000);
+
+        return 0;
+}
+
 uint8_t get_bootflags(void)
 {
    static uint8_t runonce = 0;
