@@ -97,36 +97,69 @@ struct mv_ddr_topology_map *mv_ddr_topology_map_get(void)
 	return &ts78xx_ecc_topology_map;
 }
 
-u8 get_bootflags(void)
+int wdog_en = 0;
+void hw_watchdog_init(void)
 {
-	static u8 runonce;
-	static u8 bootflags;
+	char * const checkflag[] = {"silabs", "wdog"};
+	//wdog_en = 1;
+	wdog_en = (u8)silab_cmd(2, checkflag);
+}
 
-	if (runonce != 1) {
-		i2c_read(0x54, BOOTFLAG_REG, 2, &bootflags, 1);
-		runonce = 1;
+void hw_watchdog_reset(void)
+{
+#ifndef CONFIG_SPL_BUILD
+	char * const feed[] = {"silabs", "wdog", "feed"};
+	static ulong lastfeed;
+
+	if(wdog_en != 1) return;
+
+	if(get_timer(lastfeed) > 1000) {
+		__led_set(CONFIG_LED_STATUS_BIT, 1); /* green */
+		//return;
+		//silab_cmd(3, feed);
+		return;
+		lastfeed = get_timer(0);
 	}
-	return bootflags;
+#endif
 }
 
 void board_spi_cs_activate(int cs)
 {
-	if (cs == 1) {
-		/* Route CS to onboard flash */
-		writel(0x20000, 0xf1018170);
-		fpga_dio_dat_clr(0, (1 << 12) | (1 << 13));
-	} else if (cs == 2) {
-		/* Route CS to offboard flash */
-		writel(0x20000, 0xf1018174);
-		fpga_dio_dat_clr(0, (1 << 12) | (1 << 13));
+	/* Always pick CPU connection to FPGA flash */
+	fpga_dio_dat_clr(0, 1 << 18); // CPU_ACCESS_FPGA_FLASH_PAD
+	fpga_dio_oe_set(0, 1 << 18); // CPU_ACCESS_FPGA_FLASH_PAD
+
+	/* Set default state for FPGA SPI Flash chip select */
+	fpga_dio_dat_set(1, 1 << 9);
+	fpga_dio_oe_set(1, 1 << 9);
+	fpga_dio_dat_set(0, 1 << 18); // CPU_ACCESS_FPGA_FLASH_PAD
+
+
+	if (cs == 0) { // Offboard SPI boot flash
+		writel(0x2000000, 0xf1018134); // MPP_25 / SPI_0_BOOT_CS0#
+	} else if (cs == 1 || cs == 2) { // Onboard SPI FPGA Flash
+		fpga_dio_dat_clr(0, 1 << 18); // CPU_ACCESS_FPGA_FLASH_PAD
+		fpga_dio_dat_clr(1, 1 << 9); // spi_0_fpga_cs3_padn low
+
+		if(cs == 1) {
+			/* FPGA_FLASH_SELECT high selects onboard */
+			writel(0x20000, 0xf101816c);
+			writel(0x20000, 0xf1018170);
+		} else if (cs == 2) {
+			writel(0x20000, 0xf1018168);
+		}
 	}
+	udelay(1);
 }
 
 void board_spi_cs_deactivate(int cs)
 {
-	/* Same CS is going to cs 1/2, but activate picks the mux */
-	if (cs == 1 || cs == 2)
-		fpga_dio_dat_set(0, (1 << 12) | (1 << 13));
+	if (cs == 0) {
+		writel(0x2000000, 0xf1018130);
+	} else if (cs == 1 || cs == 2) {
+		fpga_dio_dat_set(1, 1 << 9);
+		writel(0x20000, 0xf1018168);
+	}
 }
 
 int board_early_init_f(void)
@@ -187,6 +220,8 @@ int board_init(void)
 	/* Address of boot parameters */
 	gd->bd->bi_boot_params = mvebu_sdram_bar(0) + 0x100;
 
+	wdog_en = 0;
+
 	return 0;
 }
 
@@ -203,6 +238,7 @@ void inc_mac(uchar *enetaddr)
 int board_late_init(void)
 {
 	uint64_t mac;
+	hw_watchdog_init();
 	uchar enetaddr[6], tmp[6];
 	char * const cmd[] = {"silabs", "mac"};
 
@@ -214,7 +250,7 @@ int board_late_init(void)
 		env_set("board_model", "7820");
 		break;
 	case 0x7840:
-		env_set("board_revision", "P3");
+		env_set("board_revision", "B");
 		env_set("board_name", "TS-7840");
 		env_set("board_model", "7840");
 		break;
@@ -244,8 +280,6 @@ int board_late_init(void)
 		eth_env_set_enetaddr("eth3addr", enetaddr);
 	}
 
-	hw_watchdog_init();
-
 	/* Enable USB 5V, and take mPCIe out of reset */
 	fpga_dio_dat_set(1, (1 << 20) | (1 << 22));
 	fpga_dio_oe_set(1, (1 << 20) | (1 << 22));
@@ -260,14 +294,17 @@ int board_late_init(void)
 	/* Enable RED led only to indicate boot progress */
 	__led_set(CONFIG_LED_STATUS_BIT, 0); /* Green */
 	__led_set(CONFIG_LED_STATUS_BIT1, 1); /* Red */
-	__led_set(CONFIG_LED_STATUS_BIT2, 0); /* Blue */
+
+	/* Enable WIFI_EN */
+	fpga_dio_oe_set(0, (1 << 28));
+	fpga_dio_dat_set(0, (1 << 28));
 
 	return 0;
 }
 
 u32 board_rng_seed(void)
 {
-	return fpga_peek32(0x44);
+	return fpga_peek32(0xa4);
 }
 
 int checkboard(void)
@@ -275,50 +312,15 @@ int checkboard(void)
 	return 0;
 }
 
-#ifndef CONFIG_SPL_BUILD
-/* The bootup FPGA has basic code needed for startup, but when poked
- * at FPGA_RELOAD it will reload itself from 0xf0000 on the ASMI accessible
- * SPI flash.  This will have the application load of the FPGA intended
- * for Linux
- */
-static int do_tsfpga_reload(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
-{
-	int ret = 0;
-	/* This will reload the FPGA from a 0xf0000 in the FPGA flash */
-	writew((1 << 15), FPGA_RELOAD);
-
-	pci_init_board();
-
-	return ret;
-}
-
-U_BOOT_CMD(tsfpga, 2, 1, do_tsfpga_reload,
-	   "Boot from factory FPGA to application load",
-	   "Returns 0 on success"
-);
-#endif /* CONFIG_SPL_BUILD */
-
 #ifdef CONFIG_BOOTCOUNT_LIMIT
 void bootcount_store(ulong a)
 {
-	writeb((u8)a, FPGA_FRAM_BOOTCOUNT);
-	/* Takes 9us to write */
-	udelay(18);
-	if ((u8)a != readb(FPGA_FRAM_BOOTCOUNT))
-		printf("New FRAM bootcount did not write!\n");
+	
 }
 
 ulong bootcount_load(void)
 {
-	u8 val = readb(FPGA_FRAM_BOOTCOUNT);
-
-	/* Depopulated FRAM returns all ffs */
-	if (val == 0xff) {
-		puts("FRAM returned unexpected value.  Returning bootcount 0\n");
-		return 0;
-	}
-
-	return val;
+	return 0;
 }
 
 #endif //CONFIG_BOOTCOUNT_LIMIT
