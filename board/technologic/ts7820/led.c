@@ -17,8 +17,8 @@
 
 void __led_init(led_id_t mask, int state)
 {
-	fpga_dio_oe_set(0, CONFIG_LED_STATUS_BIT |
-			   CONFIG_LED_STATUS_BIT1);
+	fpga_dio_oe_set(0, TS7840_RIGHT_GRN_LED |
+			   TS7840_RIGHT_RED_LED);
 	__led_set(mask, state);
 }
 
