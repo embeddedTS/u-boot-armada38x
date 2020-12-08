@@ -186,7 +186,6 @@
 	"pxefile_addr_r=" PXEFILE_ADDR_R "\0"
 
 #define CONFIG_BOOTCOMMAND \
-	"tsfpga;" \
 	"if silabs scaps; then " \
 		"silabs scaps wait full;" \
 	"fi;" \
