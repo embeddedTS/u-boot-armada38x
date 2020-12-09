@@ -125,20 +125,14 @@ void hw_watchdog_reset(void)
 
 void board_spi_cs_activate(int cs)
 {
-	/* Always pick CPU connection to FPGA flash */
-	fpga_dio_dat_clr(0, 1 << 18); // CPU_ACCESS_FPGA_FLASH_PAD
-	fpga_dio_oe_set(0, 1 << 18); // CPU_ACCESS_FPGA_FLASH_PAD
-
 	/* Set default state for FPGA SPI Flash chip select */
 	fpga_dio_dat_set(1, 1 << 9);
 	fpga_dio_oe_set(1, 1 << 9);
-	fpga_dio_dat_set(0, 1 << 18); // CPU_ACCESS_FPGA_FLASH_PAD
 
 
 	if (cs == 0) { // Offboard SPI boot flash
 		writel(0x2000000, 0xf1018134); // MPP_25 / SPI_0_BOOT_CS0#
 	} else if (cs == 1 || cs == 2) { // Onboard SPI FPGA Flash
-		fpga_dio_dat_clr(0, 1 << 18); // CPU_ACCESS_FPGA_FLASH_PAD
 		fpga_dio_dat_clr(1, 1 << 9); // spi_0_fpga_cs3_padn low
 
 		if(cs == 1) {
