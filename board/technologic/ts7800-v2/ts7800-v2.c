@@ -385,6 +385,7 @@ int board_late_init(void)
       } else {
 
          eth_env_set_enetaddr("eth1addr", enetaddr);
+	 eth_env_set_enetaddr("ethaddr", enetaddr);
       }
    }
 
