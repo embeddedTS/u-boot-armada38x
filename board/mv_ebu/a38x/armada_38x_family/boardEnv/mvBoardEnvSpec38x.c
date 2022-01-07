@@ -524,7 +524,7 @@ MV_BOARD_INFO armada_38x_clearfog_board_info = {
 };
 
 /*******************************************************************************
- * A38x Technologic Systems TS-7800v2
+ * A38x embeddedTS TS-7800v2
  *******************************************************************************/
 MV_BOARD_TWSI_INFO armada_38x_ts7800v2_BoardTwsiDev[] = {
 	/* {{MV_BOARD_DEV_CLASS devClass, MV_U8 devClassId,  MV_U8 twsiDevAddr, MV_U8 twsiDevAddrType}} */
@@ -606,7 +606,7 @@ void A38x_TS7800V2_BOARD_gpp_callback(MV_BOARD_INFO *board) {
 }
 
 MV_BOARD_INFO armada_38x_ts7800v2_board_info = {
-	.boardName				= "Technologic Systems TS-7800v2",
+	.boardName				= "embeddedTS TS-7800v2",
 	.numBoardNetComplexValue		= 0,
 	.pBoardNetComplexInfo			= NULL,
 	.pBoardMppConfigValue			= armada_38x_ts7800v2_BoardMppConfigValue,
@@ -672,7 +672,7 @@ MV_BOARD_INFO armada_38x_ts7800v2_board_info = {
 };
 
 /*******************************************************************************
- * A38x Technologic Systems TS-7840
+ * A38x embeddedTS TS-7840
  *******************************************************************************/
 MV_BOARD_TWSI_INFO armada_38x_ts7840_BoardTwsiDev[] = {
 	/* {{MV_BOARD_DEV_CLASS devClass, MV_U8 devClassId,  MV_U8 twsiDevAddr, MV_U8 twsiDevAddrType}} */
@@ -728,7 +728,7 @@ void A38x_TS7840_BOARD_gpp_callback(MV_BOARD_INFO *board) {
 }
 
 MV_BOARD_INFO armada_38x_ts7840_board_info = {
-	.boardName				= "Technologic Systems TS-7840",
+	.boardName				= "embeddedTS TS-7840",
 	.numBoardNetComplexValue		= 0,
 	.pBoardNetComplexInfo			= NULL,
 	.pBoardMppConfigValue			= armada_38x_ts7840_BoardMppConfigValue,

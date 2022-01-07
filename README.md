@@ -12,4 +12,4 @@ export CROSS_COMPILE_BH=&lt;path-to&gt;/arm-marvell-linux-gnueabi-<br>
 
 The toolchain may be downloaded from the following location:<br>
 
-ftp://ftp.embeddedarm.com/ts-arm-sbc/ts-7800-v2-linux/cross-toolchains/armv7-marvell-linux-uclibcgnueabi-softfp_i686_64K_Dev_20131002.tar.bz2
+ftp://ftp.embeddedTS.com/ts-arm-sbc/ts-7800-v2-linux/cross-toolchains/armv7-marvell-linux-uclibcgnueabi-softfp_i686_64K_Dev_20131002.tar.bz2
