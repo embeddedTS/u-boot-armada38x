@@ -1,7 +1,7 @@
 /*
  * Qualcomm SDHCI driver - SD/eMMC controller
  *
- * (C) Copyright 2015 Mateusz Kulikowski <mark@embeddedarm.com>
+ * (C) Copyright 2015 Mateusz Kulikowski <mark@embeddedTS.com>
  *
  * SPDX-License-Identifier:	GPL-2.0+
  */

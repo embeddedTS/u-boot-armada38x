@@ -1,6 +1,6 @@
 /*
  * (C) Copyright 2018
- * Mark Featherston, mark@embeddedarm.com
+ * Mark Featherston, mark@embeddedTS.com
  *
  * SPDX-License-Identifier:	GPL-2.0+
  */

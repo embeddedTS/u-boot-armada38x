@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2017 Mark Featherston <mark@embeddedarm.com>
+# Copyright (C) 2017 Mark Featherston <mark@embeddedTS.com>
 #
 # SPDX-License-Identifier:	GPL-2.0+
 #
