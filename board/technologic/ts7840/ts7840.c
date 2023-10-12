@@ -50,19 +50,6 @@ static struct serdes_map board_serdes_map[] = {
 	{SGMII2, SERDES_SPEED_1_25_GBPS, SERDES_DEFAULT_MODE, 0, 0},
 };
 
-int get_board_model(void)
-{
-	static int model;
-
-	if (model == 0) {
-		if (of_machine_is_compatible("technologic,a385-ts7840"))
-			model = 0x7840;
-		else if (of_machine_is_compatible("technologic,a385-ts7820"))
-			model = 0x7820;
-	}
-	return model;
-}
-
 int hws_board_topology_load(struct serdes_map **serdes_map_array, u8 *count)
 {
 	*serdes_map_array = board_serdes_map;
@@ -188,7 +175,6 @@ int misc_init_r(void)
 	pci_dev_t dev;
 	unsigned int p = 0;
 	struct pci_device_id ids[3] = {
-		{TS_FPGA_VENDOR, TS7820_FPGA_DEVICE},
 		{TS_FPGA_VENDOR, TS7840_FPGA_DEVICE},
 		{0, 0}
 	};
@@ -237,20 +223,9 @@ int board_late_init(void)
 	char * const cmd[] = {"silabs", "mac"};
 
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
-	switch (get_board_model()) {
-	case 0x7820:
-		env_set("board_revision", "P1");
-		env_set("board_name", "TS-7820");
-		env_set("board_model", "7820");
-		break;
-	case 0x7840:
-		env_set("board_revision", "B");
-		env_set("board_name", "TS-7840");
-		env_set("board_model", "7840");
-		break;
-	default:
-		puts("Unknown board\n");
-	}
+	env_set("board_revision", "B");
+	env_set("board_name", "TS-7840");
+	env_set("board_model", "7840");
 #endif
 
 	mac = silab_cmd(2, cmd);

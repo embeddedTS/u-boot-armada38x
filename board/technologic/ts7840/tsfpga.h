@@ -5,7 +5,6 @@
 #include <asm/io.h>
 
 #define TS_FPGA_VENDOR		0x1e6d
-#define TS7820_FPGA_DEVICE	0x7820
 #define TS7840_FPGA_DEVICE	0x7840
 
 #define FPGA_MODEL		0x0

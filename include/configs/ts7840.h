@@ -4,8 +4,8 @@
  * SPDX-License-Identifier:	GPL-2.0+
  */
 
-#ifndef _CONFIG_TS7820_H
-#define _CONFIG_TS7820_H
+#ifndef _CONFIG_TS7840_H
+#define _CONFIG_TS7840_H
 
 #undef CONFIG_SYS_BOARD
 #define CONFIG_SYS_BOARD ""
@@ -237,4 +237,4 @@
 
 #endif /* CONFIG_SPL_BUILD */
 
-#endif /* _CONFIG_TS7820_H */
+#endif /* _CONFIG_TS7840_H */
