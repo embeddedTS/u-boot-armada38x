@@ -204,16 +204,6 @@
 		"if test $ssd_present = 1; then " \
 			"run scsi_boot;" \
 		"fi;\0" \
-	"usbprod=usb start;" \
-		"if usb storage;" \
-			"then echo Checking USB storage for updates;" \
-			"if load usb 0:1 ${scriptaddr} /tsinit.ub;" \
-				"then led 0 on;" \
-				"source ${scriptaddr};" \
-				"led 1 off;" \
-				"exit;" \
-			"fi;" \
-		"fi;\0" \
 	"nfsboot=echo Booting from NFS ...;" \
 		"dhcp;" \
 		"nfs ${fdt_addr_r} ${nfsroot}/boot/" CONFIG_DEFAULT_DEVICE_TREE ".dtb;" \
