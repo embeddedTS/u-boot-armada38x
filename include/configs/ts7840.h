@@ -73,8 +73,6 @@
 #undef CONFIG_PCI_SCAN_SHOW
 #endif
 
-#define CONFIG_BOOTCOUNT_LIMIT
-
 /* SATA support */
 #ifdef CONFIG_SCSI
 #define CONFIG_LIBATA

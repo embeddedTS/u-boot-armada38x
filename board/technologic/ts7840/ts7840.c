@@ -280,17 +280,3 @@ int checkboard(void)
 {
 	return 0;
 }
-
-#ifdef CONFIG_BOOTCOUNT_LIMIT
-void bootcount_store(ulong a)
-{
-	
-}
-
-ulong bootcount_load(void)
-{
-	return 0;
-}
-
-#endif //CONFIG_BOOTCOUNT_LIMIT
-
